@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
+  <meta charset="UTF-8" />
   <title>Solaya Vault</title>
   <script src="https://cdn.jsdelivr.net/npm/@solana/web3.js@latest/lib/index.iife.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/bip39@3.0.4/dist/index.min.js"></script>
@@ -31,6 +31,10 @@
       display: inline-block;
       margin-top: 20px;
     }
+    #error {
+      color: red;
+      margin-top: 10px;
+    }
   </style>
 </head>
 <body>
@@ -39,6 +43,7 @@
     <p>👁‍🗨 הכנס 12 מילים לשחזור:</p>
     <input id="mnemonic" placeholder="twelve words..." /><br>
     <button onclick="connectWallet()">התחבר</button>
+    <p id="error"></p>
   </div>
 
   <div class="card" id="wallet-info" style="display:none">
@@ -57,36 +62,50 @@
     const connection = new solanaWeb3.Connection(solanaWeb3.clusterApiUrl("mainnet-beta"));
 
     async function connectWallet() {
-      const mnemonic = document.getElementById("mnemonic").value.trim();
-      const seed = await bip39.mnemonicToSeed(mnemonic);
-      const path = "m/44'/501'/0'/0'";
-      const derived = ed25519HdKey.derivePath(path, seed.toString("hex")).key;
-      keypair = solanaWeb3.Keypair.fromSeed(derived);
+      const errorEl = document.getElementById("error");
+      errorEl.innerText = "";
+      let mnemonic = document.getElementById("mnemonic").value.trim();
 
-      const pubkey = keypair.publicKey.toBase58();
-      document.getElementById("pubkey").innerText = pubkey;
+      if (mnemonic.split(" ").length !== 12) {
+        errorEl.innerText = "❌ יש להזין בדיוק 12 מילים.";
+        return;
+      }
 
-      const balanceLamports = await connection.getBalance(keypair.publicKey);
-      document.getElementById("balance").innerText = (balanceLamports / solanaWeb3.LAMPORTS_PER_SOL).toFixed(4);
-      
-      document.getElementById("wallet-info").style.display = "block";
+      try {
+        const seed = await bip39.mnemonicToSeed(mnemonic);
+        const path = "m/44'/501'/0'/0'";
+        const derived = ed25519HdKey.derivePath(path, seed.toString("hex")).key;
+        keypair = solanaWeb3.Keypair.fromSeed(derived);
+
+        const pubkey = keypair.publicKey.toBase58();
+        document.getElementById("pubkey").innerText = pubkey;
+
+        const balanceLamports = await connection.getBalance(keypair.publicKey);
+        document.getElementById("balance").innerText = (balanceLamports / solanaWeb3.LAMPORTS_PER_SOL).toFixed(4);
+
+        document.getElementById("wallet-info").style.display = "block";
+      } catch (e) {
+        errorEl.innerText = "❌ שגיאה בהתחברות: " + e.message;
+      }
     }
 
     async function sendSol() {
       const to = document.getElementById("toAddress").value.trim();
       const amount = parseFloat(document.getElementById("amount").value.trim()) * solanaWeb3.LAMPORTS_PER_SOL;
-      const transaction = new solanaWeb3.Transaction().add(
-        solanaWeb3.SystemProgram.transfer({
-          fromPubkey: keypair.publicKey,
-          toPubkey: new solanaWeb3.PublicKey(to),
-          lamports: amount
-        })
-      );
+      const txStatus = document.getElementById("tx-status");
+      txStatus.innerText = "שולח...";
       try {
+        const transaction = new solanaWeb3.Transaction().add(
+          solanaWeb3.SystemProgram.transfer({
+            fromPubkey: keypair.publicKey,
+            toPubkey: new solanaWeb3.PublicKey(to),
+            lamports: amount
+          })
+        );
         const sig = await solanaWeb3.sendAndConfirmTransaction(connection, transaction, [keypair]);
-        document.getElementById("tx-status").innerText = "🟢 שידור בוצע: " + sig;
+        txStatus.innerText = "🟢 שידור בוצע בהצלחה: " + sig;
       } catch (err) {
-        document.getElementById("tx-status").innerText = "❌ שגיאה: " + err.message;
+        txStatus.innerText = "❌ שגיאה: " + err.message;
       }
     }
   </script>
