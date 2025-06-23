@@ -1,10 +1,10 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
+  <meta charset="UTF-8">
   <title>Solaya Vault</title>
   <script src="https://cdn.jsdelivr.net/npm/@solana/web3.js@latest/lib/index.iife.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/bip39@3.0.4/dist/index.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/bip39@3.0.4/dist/bip39.browser.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/ed25519-hd-key@1.1.1/dist/index.umd.js"></script>
   <style>
     body {
@@ -72,7 +72,7 @@
       }
 
       try {
-        const seed = await bip39.mnemonicToSeed(mnemonic);
+        const seed = await window.bip39.mnemonicToSeed(mnemonic);
         const path = "m/44'/501'/0'/0'";
         const derived = ed25519HdKey.derivePath(path, seed.toString("hex")).key;
         keypair = solanaWeb3.Keypair.fromSeed(derived);
