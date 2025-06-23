@@ -1,37 +1,145 @@
-<script>
-  const connection = new solanaWeb3.Connection(solanaWeb3.clusterApiUrl("mainnet-beta"));
-  let keypair;
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Solaya Vault</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="icon" href="https://cryptologos.cc/logos/solana-sol-logo.png?v=032">
+  <script src="https://cdn.jsdelivr.net/npm/@solana/web3.js@latest/lib/index.iife.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/bip39@3.0.4/browser/bip39.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/ed25519-hd-key@1.1.1/dist/index.umd.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500&display=swap" rel="stylesheet">
+  <style>
+    body {
+      margin: 0;
+      font-family: 'Orbitron', sans-serif;
+      background: #0f0f0f;
+      color: #fff;
+      text-align: center;
+    }
+    header {
+      background: #1a1a1a;
+      padding: 20px;
+      box-shadow: 0 2px 10px #000;
+    }
+    header img {
+      height: 40px;
+      vertical-align: middle;
+    }
+    header h1 {
+      display: inline;
+      margin-left: 10px;
+      font-size: 24px;
+      vertical-align: middle;
+    }
+    .container {
+      padding: 30px;
+    }
+    input, button {
+      padding: 12px;
+      margin: 10px;
+      font-size: 16px;
+      width: 80%;
+      border: none;
+      border-radius: 6px;
+    }
+    button {
+      background-color: #00ff9f;
+      color: #000;
+      font-weight: bold;
+      cursor: pointer;
+    }
+    .hidden {
+      display: none;
+    }
+    #error {
+      color: #ff4444;
+      margin-top: 10px;
+    }
+    .qr {
+      margin-top: 20px;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <img src="https://cryptologos.cc/logos/solana-sol-logo.png?v=032" alt="Solana Logo">
+    <h1>Solaya Vault</h1>
+  </header>
 
-  async function connectWallet() {
-    const errorEl = document.getElementById("error");
-    errorEl.innerText = "";
-    let mnemonic = document.getElementById("mnemonic").value.trim();
+  <div class="container" id="login">
+    <h2>🔐 התחברות עם 12 מילים</h2>
+    <input id="mnemonic" placeholder="twelve words..." />
+    <button onclick="connectWallet()">התחבר</button>
+    <p id="error"></p>
+  </div>
 
-    if (mnemonic.split(" ").length !== 12) {
-      errorEl.innerText = "❌ יש להזין בדיוק 12 מילים.";
-      return;
+  <div class="container hidden" id="wallet-info">
+    <p><b>כתובת:</b> <span id="pubkey"></span></p>
+    <div class="qr" id="qrcode"></div>
+    <p><b>יתרה:</b> <span id="balance"></span> SOL</p>
+    <input id="toAddress" placeholder="כתובת יעד לשליחה" />
+    <input id="amount" placeholder="סכום ב-SOL" />
+    <button onclick="sendSol()">שלח SOL</button>
+    <p id="tx-status"></p>
+  </div>
+
+  <script>
+    const connection = new solanaWeb3.Connection(solanaWeb3.clusterApiUrl("mainnet-beta"));
+    let keypair;
+
+    async function connectWallet() {
+      const errorEl = document.getElementById("error");
+      errorEl.innerText = "";
+      const mnemonic = document.getElementById("mnemonic").value.trim();
+      if (mnemonic.split(" ").length !== 12) {
+        errorEl.innerText = "❌ נא להזין בדיוק 12 מילים.";
+        return;
+      }
+
+      try {
+        const seed = await window.browserBip39.mnemonicToSeed(mnemonic);
+        const hex = Array.from(seed).map(b => b.toString(16).padStart(2, '0')).join('');
+        const derived = ed25519HdKey.derivePath("m/44'/501'/0'/0'", hex).key;
+        keypair = solanaWeb3.Keypair.fromSeed(derived);
+
+        const pubkey = keypair.publicKey.toBase58();
+        document.getElementById("pubkey").innerText = pubkey;
+
+        const balance = await connection.getBalance(keypair.publicKey);
+        document.getElementById("balance").innerText = (balance / solanaWeb3.LAMPORTS_PER_SOL).toFixed(4);
+
+        document.getElementById("login").classList.add("hidden");
+        document.getElementById("wallet-info").classList.remove("hidden");
+
+        QRCode.toCanvas(document.getElementById("qrcode"), pubkey, function (error) {
+          if (error) console.error(error);
+        });
+      } catch (e) {
+        errorEl.innerText = "❌ שגיאה: " + e.message;
+      }
     }
 
-    try {
-      const seed = await window.browserBip39.mnemonicToSeed(mnemonic); // 💥 זו השורה הנכונה!
-      const hex = Array.from(seed).map(b => b.toString(16).padStart(2, '0')).join('');
-      const derived = ed25519HdKey.derivePath("m/44'/501'/0'/0'", hex).key;
-      keypair = solanaWeb3.Keypair.fromSeed(derived);
-
-      const pubkey = keypair.publicKey.toBase58();
-      document.getElementById("pubkey").innerText = pubkey;
-
-      const balanceLamports = await connection.getBalance(keypair.publicKey);
-      document.getElementById("balance").innerText = (balanceLamports / solanaWeb3.LAMPORTS_PER_SOL).toFixed(4);
-
-      document.getElementById("login").classList.add("hidden");
-      document.getElementById("wallet-info").classList.remove("hidden");
-
-      QRCode.toCanvas(document.getElementById('qrcode'), pubkey, function (error) {
-        if (error) console.error(error);
-      });
-    } catch (e) {
-      errorEl.innerText = "❌ שגיאה: " + e.message;
+    async function sendSol() {
+      const to = document.getElementById("toAddress").value.trim();
+      const amount = parseFloat(document.getElementById("amount").value.trim()) * solanaWeb3.LAMPORTS_PER_SOL;
+      const txStatus = document.getElementById("tx-status");
+      txStatus.innerText = "🚀 שולח...";
+      try {
+        const transaction = new solanaWeb3.Transaction().add(
+          solanaWeb3.SystemProgram.transfer({
+            fromPubkey: keypair.publicKey,
+            toPubkey: new solanaWeb3.PublicKey(to),
+            lamports: amount
+          })
+        );
+        const signature = await solanaWeb3.sendAndConfirmTransaction(connection, transaction, [keypair]);
+        txStatus.innerText = "✅ נשלח! מזהה עסקה:\n" + signature;
+      } catch (err) {
+        txStatus.innerText = "❌ שגיאה בשליחה: " + err.message;
+      }
     }
-  }
-</script>
+  </script>
+</body>
+</html>
