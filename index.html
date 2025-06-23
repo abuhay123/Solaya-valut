@@ -1,82 +1,101 @@
-<!-- Load bip39 -->
-<script src="https://cdn.jsdelivr.net/npm/bip39@3.0.4/browser/bip39.min.js"></script>
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
+  <meta charset="UTF-8" />
   <title>Solaya Vault</title>
   <script src="https://cdn.jsdelivr.net/npm/@solana/web3.js@latest/lib/index.iife.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/bip39@3.0.4/dist/bip39.browser.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/ed25519-hd-key@1.1.1/dist/index.umd.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
   <style>
     body {
-      background-color: #111;
+      margin: 0;
+      background: #0d1117;
       color: #fff;
-      font-family: sans-serif;
-      text-align: center;
+      font-family: 'Segoe UI', sans-serif;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+    }
+    .container {
+      background: #161b22;
       padding: 30px;
+      border-radius: 15px;
+      box-shadow: 0 0 15px #00000088;
+      width: 90%;
+      max-width: 420px;
+      text-align: center;
     }
     input, button {
+      width: 90%;
       padding: 10px;
-      margin: 5px;
-      border-radius: 5px;
+      margin: 10px 0;
       border: none;
+      border-radius: 8px;
       font-size: 16px;
     }
-    input {
-      width: 300px;
+    button {
+      background: #238636;
+      color: white;
+      cursor: pointer;
+      transition: 0.3s;
     }
-    .card {
-      background-color: #222;
-      padding: 20px;
-      border-radius: 10px;
-      display: inline-block;
-      margin-top: 20px;
+    button:hover {
+      background: #2ea043;
+    }
+    .hidden {
+      display: none;
     }
     #error {
-      color: red;
-      margin-top: 10px;
+      color: #ff5555;
+    }
+    .qr {
+      margin-top: 20px;
     }
   </style>
 </head>
 <body>
-  <h1>💼 Solaya Vault</h1>
-  <div class="card">
-    <p>👁‍🗨 הכנס 12 מילים לשחזור:</p>
-    <input id="mnemonic" placeholder="twelve words..." /><br>
-    <button onclick="connectWallet()">התחבר</button>
-    <p id="error"></p>
+  <div class="container">
+    <h2>💼 Solaya Vault</h2>
+    <div id="login">
+      <input id="mnemonic" placeholder="הכנס 12 מילים..." />
+      <button onclick="connectWallet()">התחבר</button>
+      <p id="error"></p>
+    </div>
+
+    <div id="wallet-info" class="hidden">
+      <p><b>כתובת:</b><br><span id="pubkey"></span></p>
+      <div class="qr" id="qrcode"></div>
+      <p><b>יתרה:</b> <span id="balance"></span> SOL</p>
+      <hr>
+      <input id="toAddress" placeholder="כתובת יעד" />
+      <input id="amount" placeholder="סכום לשליחה ב-SOL" />
+      <button onclick="sendSol()">שלח SOL</button>
+      <p id="tx-status"></p>
+    </div>
   </div>
 
-  <div class="card" id="wallet-info" style="display:none">
-    <p>✅ מחובר</p>
-    <p><b>כתובת:</b> <span id="pubkey"></span></p>
-    <p><b>יתרה:</b> <span id="balance"></span> SOL</p>
-    <hr>
-    <input id="toAddress" placeholder="כתובת יעד לשליחה" /><br>
-    <input id="amount" placeholder="כמות ב-SOL" /><br>
-    <button onclick="sendSol()">שלח SOL</button>
-    <p id="tx-status"></p>
-  </div>
+  <audio id="sound" src="https://www.myinstants.com/media/sounds/cash-register.mp3"></audio>
 
   <script>
-    let keypair;
     const connection = new solanaWeb3.Connection(solanaWeb3.clusterApiUrl("mainnet-beta"));
+    let keypair;
 
     async function connectWallet() {
       const errorEl = document.getElementById("error");
       errorEl.innerText = "";
       let mnemonic = document.getElementById("mnemonic").value.trim();
-
       if (mnemonic.split(" ").length !== 12) {
         errorEl.innerText = "❌ יש להזין בדיוק 12 מילים.";
         return;
       }
 
       try {
-        const seed = await window.bip39.mnemonicToSeed(mnemonic);
-        const path = "m/44'/501'/0'/0'";
-        const derived = ed25519HdKey.derivePath(path, seed.toString("hex")).key;
+        const bip39 = window.bip39;
+        const seedBuffer = bip39.mnemonicToSeedSync(mnemonic);
+        const seedHex = Array.from(seedBuffer).map(b => b.toString(16).padStart(2, '0')).join('');
+        const derived = ed25519HdKey.derivePath("m/44'/501'/0'/0'", seedHex).key;
         keypair = solanaWeb3.Keypair.fromSeed(derived);
 
         const pubkey = keypair.publicKey.toBase58();
@@ -85,29 +104,45 @@
         const balanceLamports = await connection.getBalance(keypair.publicKey);
         document.getElementById("balance").innerText = (balanceLamports / solanaWeb3.LAMPORTS_PER_SOL).toFixed(4);
 
-        document.getElementById("wallet-info").style.display = "block";
+        document.getElementById("login").classList.add("hidden");
+        document.getElementById("wallet-info").classList.remove("hidden");
+
+        QRCode.toCanvas(document.getElementById('qrcode'), pubkey, function (error) {
+          if (error) console.error(error);
+        });
       } catch (e) {
-        errorEl.innerText = "❌ שגיאה בהתחברות: " + e.message;
+        errorEl.innerText = "❌ שגיאה: " + e.message;
       }
     }
 
     async function sendSol() {
       const to = document.getElementById("toAddress").value.trim();
-      const amount = parseFloat(document.getElementById("amount").value.trim()) * solanaWeb3.LAMPORTS_PER_SOL;
+      const amountSol = parseFloat(document.getElementById("amount").value.trim());
       const txStatus = document.getElementById("tx-status");
+
+      if (!solanaWeb3.PublicKey.isOnCurve(to)) {
+        txStatus.innerText = "❌ כתובת לא תקינה.";
+        return;
+      }
+      if (amountSol <= 0 || isNaN(amountSol)) {
+        txStatus.innerText = "❌ כמות לא תקינה.";
+        return;
+      }
+
       txStatus.innerText = "שולח...";
       try {
         const transaction = new solanaWeb3.Transaction().add(
           solanaWeb3.SystemProgram.transfer({
             fromPubkey: keypair.publicKey,
             toPubkey: new solanaWeb3.PublicKey(to),
-            lamports: amount
+            lamports: amountSol * solanaWeb3.LAMPORTS_PER_SOL
           })
         );
         const sig = await solanaWeb3.sendAndConfirmTransaction(connection, transaction, [keypair]);
-        txStatus.innerText = "🟢 שידור בוצע בהצלחה: " + sig;
+        txStatus.innerText = "🟢 נשלח בהצלחה. מזהה עסקה:\n" + sig;
+        document.getElementById("sound").play();
       } catch (err) {
-        txStatus.innerText = "❌ שגיאה: " + err.message;
+        txStatus.innerText = "❌ שגיאה בשליחה: " + err.message;
       }
     }
   </script>
