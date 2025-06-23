@@ -1,0 +1,1 @@
+# Solaya-valut
