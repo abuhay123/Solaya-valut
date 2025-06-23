@@ -3,6 +3,11 @@
 <head>
   <meta charset="UTF-8" />
   <title>Solaya Vault</title>
+  <link rel="manifest" href="manifest.json">
+  <link rel="icon" href="https://cryptologos.cc/logos/solana-sol-logo.png?v=032">
+  <meta name="theme-color" content="#0f0f0f"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
   <script src="https://cdn.jsdelivr.net/npm/@solana/web3.js@latest/lib/index.iife.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/bip39@3.0.4/browser/bip39.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/ed25519-hd-key@1.1.1/dist/index.umd.js"></script>
@@ -147,6 +152,7 @@
   </div>
 
   <script>
+    const bip39 = window.browserBip39;
     const connection = new solanaWeb3.Connection(solanaWeb3.clusterApiUrl("mainnet-beta"));
     let keypair;
 
