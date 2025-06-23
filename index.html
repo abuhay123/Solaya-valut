@@ -1,231 +1,37 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <title>Solaya Vault</title>
-  <link rel="manifest" href="manifest.json">
-  <link rel="icon" href="https://cryptologos.cc/logos/solana-sol-logo.png?v=032">
-  <meta name="theme-color" content="#0f0f0f"/>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<script>
+  const connection = new solanaWeb3.Connection(solanaWeb3.clusterApiUrl("mainnet-beta"));
+  let keypair;
 
-  <script src="https://cdn.jsdelivr.net/npm/@solana/web3.js@latest/lib/index.iife.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/bip39@3.0.4/browser/bip39.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/ed25519-hd-key@1.1.1/dist/index.umd.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
-  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500&display=swap" rel="stylesheet">
-  <style>
-    body {
-      margin: 0;
-      font-family: 'Orbitron', sans-serif;
-      background: linear-gradient(145deg, #0f0f0f, #1e1e1e);
-      color: #fff;
-      overflow-x: hidden;
-    }
-    header {
-      background-color: #0d0d0d;
-      padding: 20px;
-      text-align: center;
-      box-shadow: 0 2px 8px #000;
-      position: sticky;
-      top: 0;
-      z-index: 1000;
-    }
-    header img {
-      height: 50px;
-      vertical-align: middle;
-    }
-    header h1 {
-      display: inline;
-      font-size: 26px;
-      margin-left: 10px;
-      vertical-align: middle;
-    }
-    nav {
-      margin-top: 15px;
-    }
-    nav button {
-      background: #212121;
-      color: white;
-      border: none;
-      padding: 10px 15px;
-      margin: 0 5px;
-      border-radius: 6px;
-      cursor: pointer;
-      transition: 0.3s;
-    }
-    nav button:hover {
-      background: #444;
-    }
-    .container {
-      padding: 40px 20px;
-      max-width: 480px;
-      margin: auto;
-      text-align: center;
-      animation: pulse 1.2s ease-in-out;
-    }
-    @keyframes pulse {
-      0% { transform: scale(0.98); opacity: 0.8; }
-      50% { transform: scale(1.02); opacity: 1; }
-      100% { transform: scale(1); opacity: 1; }
-    }
-    input, button {
-      width: 90%;
-      padding: 12px;
-      margin: 10px 0;
-      border: none;
-      border-radius: 8px;
-      font-size: 16px;
-      font-family: inherit;
-    }
-    button {
-      background: #00ff9f;
-      color: #000;
-      font-weight: bold;
-      cursor: pointer;
-    }
-    button:hover {
-      background: #00e68a;
-    }
-    .hidden {
-      display: none;
-    }
-    #error {
-      color: #ff5555;
-      margin-top: 10px;
-    }
-    .qr {
-      margin-top: 20px;
-    }
-    hr {
-      margin: 30px 0;
-      border: 0;
-      border-top: 1px solid #333;
-    }
-    .crypto-bg {
-      position: fixed;
-      top: 0;
-      left: 0;
-      pointer-events: none;
-      width: 100%;
-      height: 100%;
-      z-index: -1;
-      opacity: 0.05;
-      background-image: url('https://cryptologos.cc/logos/solana-sol-logo.png?v=032');
-      background-size: 120px;
-      background-repeat: repeat;
-      animation: floatbg 20s linear infinite;
-    }
-    @keyframes floatbg {
-      0% { background-position: 0 0; }
-      100% { background-position: 500px 1000px; }
-    }
-  </style>
-</head>
-<body>
-  <div class="crypto-bg"></div>
-  <header>
-    <img src="https://cryptologos.cc/logos/solana-sol-logo.png?v=032" alt="Logo">
-    <h1>Solaya Vault</h1>
-    <nav>
-      <button onclick="scrollToLogin()">התחברות</button>
-      <button onclick="scrollToWallet()">ארנק</button>
-    </nav>
-  </header>
+  async function connectWallet() {
+    const errorEl = document.getElementById("error");
+    errorEl.innerText = "";
+    let mnemonic = document.getElementById("mnemonic").value.trim();
 
-  <div class="container" id="login">
-    <h2>🔐 התחברות</h2>
-    <input id="mnemonic" placeholder="הכנס 12 מילים..." />
-    <button onclick="connectWallet()">התחבר</button>
-    <p id="error"></p>
-  </div>
-
-  <div class="container hidden" id="wallet-info">
-    <h2>👛 ארנק</h2>
-    <p><b>כתובת:</b><br><span id="pubkey"></span></p>
-    <div class="qr" id="qrcode"></div>
-    <p><b>יתרה:</b> <span id="balance"></span> SOL</p>
-    <hr>
-    <input id="toAddress" placeholder="כתובת יעד" />
-    <input id="amount" placeholder="סכום לשליחה ב-SOL" />
-    <button onclick="sendSol()">שלח SOL</button>
-    <p id="tx-status"></p>
-  </div>
-
-  <script>
-    const bip39 = window.browserBip39;
-    const connection = new solanaWeb3.Connection(solanaWeb3.clusterApiUrl("mainnet-beta"));
-    let keypair;
-
-    async function connectWallet() {
-      const errorEl = document.getElementById("error");
-      errorEl.innerText = "";
-      let mnemonic = document.getElementById("mnemonic").value.trim();
-
-      if (mnemonic.split(" ").length !== 12) {
-        errorEl.innerText = "❌ יש להזין בדיוק 12 מילים.";
-        return;
-      }
-
-      try {
-        const seed = await bip39.mnemonicToSeed(mnemonic);
-        const hex = Array.from(seed).map(b => b.toString(16).padStart(2, '0')).join('');
-        const derived = ed25519HdKey.derivePath("m/44'/501'/0'/0'", hex).key;
-        keypair = solanaWeb3.Keypair.fromSeed(derived);
-
-        const pubkey = keypair.publicKey.toBase58();
-        document.getElementById("pubkey").innerText = pubkey;
-
-        const balanceLamports = await connection.getBalance(keypair.publicKey);
-        document.getElementById("balance").innerText = (balanceLamports / solanaWeb3.LAMPORTS_PER_SOL).toFixed(4);
-
-        document.getElementById("login").classList.add("hidden");
-        document.getElementById("wallet-info").classList.remove("hidden");
-
-        QRCode.toCanvas(document.getElementById('qrcode'), pubkey, function (error) {
-          if (error) console.error(error);
-        });
-      } catch (e) {
-        errorEl.innerText = "❌ שגיאה: " + e.message;
-      }
+    if (mnemonic.split(" ").length !== 12) {
+      errorEl.innerText = "❌ יש להזין בדיוק 12 מילים.";
+      return;
     }
 
-    async function sendSol() {
-      const to = document.getElementById("toAddress").value.trim();
-      const amountSol = parseFloat(document.getElementById("amount").value.trim());
-      const txStatus = document.getElementById("tx-status");
+    try {
+      const seed = await window.browserBip39.mnemonicToSeed(mnemonic); // 💥 זו השורה הנכונה!
+      const hex = Array.from(seed).map(b => b.toString(16).padStart(2, '0')).join('');
+      const derived = ed25519HdKey.derivePath("m/44'/501'/0'/0'", hex).key;
+      keypair = solanaWeb3.Keypair.fromSeed(derived);
 
-      if (!solanaWeb3.PublicKey.isOnCurve(to)) {
-        txStatus.innerText = "❌ כתובת לא תקינה.";
-        return;
-      }
-      if (amountSol <= 0 || isNaN(amountSol)) {
-        txStatus.innerText = "❌ כמות לא תקינה.";
-        return;
-      }
+      const pubkey = keypair.publicKey.toBase58();
+      document.getElementById("pubkey").innerText = pubkey;
 
-      txStatus.innerText = "שולח...";
-      try {
-        const transaction = new solanaWeb3.Transaction().add(
-          solanaWeb3.SystemProgram.transfer({
-            fromPubkey: keypair.publicKey,
-            toPubkey: new solanaWeb3.PublicKey(to),
-            lamports: amountSol * solanaWeb3.LAMPORTS_PER_SOL
-          })
-        );
-        const sig = await solanaWeb3.sendAndConfirmTransaction(connection, transaction, [keypair]);
-        txStatus.innerText = "✅ נשלח בהצלחה. מזהה:\n" + sig;
-      } catch (err) {
-        txStatus.innerText = "❌ שגיאה בשליחה: " + err.message;
-      }
+      const balanceLamports = await connection.getBalance(keypair.publicKey);
+      document.getElementById("balance").innerText = (balanceLamports / solanaWeb3.LAMPORTS_PER_SOL).toFixed(4);
+
+      document.getElementById("login").classList.add("hidden");
+      document.getElementById("wallet-info").classList.remove("hidden");
+
+      QRCode.toCanvas(document.getElementById('qrcode'), pubkey, function (error) {
+        if (error) console.error(error);
+      });
+    } catch (e) {
+      errorEl.innerText = "❌ שגיאה: " + e.message;
     }
-
-    function scrollToLogin() {
-      document.getElementById('login').scrollIntoView({ behavior: 'smooth' });
-    }
-
-    function scrollToWallet() {
-      document.getElementById('wallet-info').scrollIntoView({ behavior: 'smooth' });
-    }
-  </script>
-</body>
-</html>
+  }
+</script>
