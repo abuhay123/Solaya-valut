@@ -6,7 +6,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <link rel="icon" href="https://cryptologos.cc/logos/solana-sol-logo.png?v=032">
   <script src="https://cdn.jsdelivr.net/npm/@solana/web3.js@latest/lib/index.iife.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/bip39@3.0.4/browser/bip39.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/bip39@3.0.4/dist/index.browser.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/ed25519-hd-key@1.1.1/dist/index.umd.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
   <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@600&display=swap" rel="stylesheet">
@@ -162,7 +162,7 @@
       }
 
       try {
-        const seed = await bip39.mnemonicToSeed(mnemonic);
+        const seed = await window.bip39.mnemonicToSeed(mnemonic);
         const hex = Array.from(seed).map(b => b.toString(16).padStart(2, '0')).join('');
         const derived = ed25519HdKey.derivePath("m/44'/501'/0'/0'", hex).key;
         keypair = solanaWeb3.Keypair.fromSeed(derived);
