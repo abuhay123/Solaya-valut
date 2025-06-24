@@ -4,13 +4,22 @@
   <meta charset="UTF-8" />
   <title>Solaya Vault</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <link rel="icon" href="https://cryptologos.cc/logos/solana-sol-logo.png?v=032">
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#000000">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-title" content="Solaya Vault">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <link rel="apple-touch-icon" href="icon.png">
+  <link rel="icon" href="icon.png">
+
   <script src="https://cdn.jsdelivr.net/npm/@solana/web3.js@latest/lib/index.iife.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/bip39@3.0.4/dist/index.browser.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/ed25519-hd-key@1.1.1/dist/index.umd.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
+
   <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@600&display=swap" rel="stylesheet">
   <style>
+    /* אותו עיצוב כמו קודם (נשמר) */
     body {
       margin: 0;
       font-family: 'Orbitron', sans-serif;
@@ -18,7 +27,6 @@
       color: #ffffff;
       text-align: center;
     }
-
     header {
       background: #111;
       padding: 20px;
@@ -27,23 +35,19 @@
       justify-content: center;
       align-items: center;
     }
-
     header img {
       height: 40px;
       margin-right: 10px;
     }
-
     header h1 {
       font-size: 24px;
       margin: 0;
       animation: glow 2s infinite ease-in-out;
     }
-
     @keyframes glow {
       0%, 100% { color: #fff; text-shadow: 0 0 10px #00ffcc; }
       50% { color: #00ffcc; text-shadow: 0 0 20px #00ffcc; }
     }
-
     nav {
       background: #1a1a1a;
       padding: 10px;
@@ -51,22 +55,16 @@
       justify-content: center;
       gap: 30px;
     }
-
     nav a {
       color: #00ffcc;
       text-decoration: none;
       font-weight: bold;
       transition: transform 0.2s ease;
     }
-
     nav a:hover {
       transform: scale(1.1);
     }
-
-    .container {
-      padding: 30px;
-    }
-
+    .container { padding: 30px; }
     input, button {
       padding: 12px;
       margin: 10px;
@@ -75,27 +73,15 @@
       border: none;
       border-radius: 6px;
     }
-
     button {
       background-color: #00ffcc;
       color: #000;
       font-weight: bold;
       cursor: pointer;
     }
-
-    .hidden {
-      display: none;
-    }
-
-    #error {
-      color: #ff4444;
-      margin-top: 10px;
-    }
-
-    .qr {
-      margin-top: 20px;
-    }
-
+    .hidden { display: none; }
+    #error { color: #ff4444; margin-top: 10px; }
+    .qr { margin-top: 20px; }
     .loader {
       margin-top: 20px;
       border: 6px solid #222;
@@ -107,7 +93,6 @@
       display: none;
       margin-inline: auto;
     }
-
     @keyframes spin {
       0% { transform: rotate(0deg); }
       100% { transform: rotate(360deg); }
@@ -116,7 +101,7 @@
 </head>
 <body>
   <header>
-    <img src="https://cryptologos.cc/logos/solana-sol-logo.png?v=032" alt="Solana Logo">
+    <img src="icon.png" alt="Logo">
     <h1>Solaya Vault</h1>
   </header>
 
@@ -145,6 +130,10 @@
   </div>
 
   <script>
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('sw.js');
+    }
+
     const connection = new solanaWeb3.Connection(solanaWeb3.clusterApiUrl("mainnet-beta"));
     let keypair;
 
@@ -162,7 +151,7 @@
       }
 
       try {
-        const seed = await window.bip39.mnemonicToSeed(mnemonic);
+        const seed = await bip39.mnemonicToSeed(mnemonic);
         const hex = Array.from(seed).map(b => b.toString(16).padStart(2, '0')).join('');
         const derived = ed25519HdKey.derivePath("m/44'/501'/0'/0'", hex).key;
         keypair = solanaWeb3.Keypair.fromSeed(derived);
