@@ -19,6 +19,7 @@
   <script src="https://cdn.jsdelivr.net/npm/bip39@3.0.4/dist/index.browser.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/ed25519-hd-key@1.1.1/dist/index.umd.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/bs58@5.0.0/dist/index.min.js"></script>
   <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@600&display=swap" rel="stylesheet">
 
   <!-- עיצוב -->
@@ -117,7 +118,12 @@
   <div class="container" id="login">
     <h2>🔐 התחברות עם 12 מילים</h2>
     <input id="mnemonic" placeholder="twelve words..." />
-    <button onclick="connectWallet()">התחבר</button>
+    <button onclick="connectWallet()">התחבר עם מילים</button>
+
+    <h2>🔑 התחברות עם מפתח פרטי</h2>
+    <input id="privateKey" placeholder="Private key (Base58)" />
+    <button onclick="connectWithPrivateKey()">התחבר עם Private Key</button>
+
     <div class="loader" id="loader"></div>
     <p id="error"></p>
   </div>
@@ -159,23 +165,46 @@
         const derived = ed25519HdKey.derivePath("m/44'/501'/0'/0'", hex).key;
         keypair = solanaWeb3.Keypair.fromSeed(derived);
 
-        const pubkey = keypair.publicKey.toBase58();
-        document.getElementById("pubkey").innerText = pubkey;
-
-        const balance = await connection.getBalance(keypair.publicKey);
-        document.getElementById("balance").innerText = (balance / solanaWeb3.LAMPORTS_PER_SOL).toFixed(4);
-
-        document.getElementById("login").classList.add("hidden");
-        document.getElementById("wallet-info").classList.remove("hidden");
-
-        QRCode.toCanvas(document.getElementById("qrcode"), pubkey, function (error) {
-          if (error) console.error(error);
-        });
+        await afterConnection();
       } catch (e) {
         errorEl.innerText = "❌ שגיאה: " + e.message;
       } finally {
         loader.style.display = "none";
       }
+    }
+
+    async function connectWithPrivateKey() {
+      const errorEl = document.getElementById("error");
+      const loader = document.getElementById("loader");
+      errorEl.innerText = "";
+      loader.style.display = "block";
+
+      try {
+        const privKey = document.getElementById("privateKey").value.trim();
+        const decoded = bs58.decode(privKey);
+        keypair = solanaWeb3.Keypair.fromSecretKey(decoded);
+
+        await afterConnection();
+      } catch (e) {
+        errorEl.innerText = "❌ שגיאה: " + e.message;
+      } finally {
+        loader.style.display = "none";
+      }
+    }
+
+    async function afterConnection() {
+      const pubkey = keypair.publicKey.toBase58();
+      document.getElementById("pubkey").innerText = pubkey;
+
+      const balance = await connection.getBalance(keypair.publicKey);
+      document.getElementById("balance").innerText = (balance / solanaWeb3.LAMPORTS_PER_SOL).toFixed(4);
+
+      document.getElementById("login").classList.add("hidden");
+      document.getElementById("wallet-info").classList.remove("hidden");
+
+      QRCode.toCanvas(document.getElementById("qrcode"), pubkey, function (error) {
+        if (error) console.error(error);
+      });
     }
 
     async function sendSol() {
