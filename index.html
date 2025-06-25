@@ -5,7 +5,7 @@
   <title>Solaya Vault</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-  <!-- Favicon + Manifest -->
+  <!-- Manifest + Icons -->
   <link rel="manifest" href="manifest.json">
   <link rel="icon" href="assets/Icon.png.png">
   <link rel="apple-touch-icon" href="assets/Icon.png.png">
@@ -19,7 +19,7 @@
   <script src="https://cdn.jsdelivr.net/npm/bip39@3.0.4/dist/index.browser.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/ed25519-hd-key@1.1.1/dist/index.umd.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/bs58@5.0.0/dist/index.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/bs58@5.0.0/dist/bs58.min.js"></script>
   <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@600&display=swap" rel="stylesheet">
 
   <!-- עיצוב -->
@@ -164,7 +164,6 @@
         const hex = Array.from(seed).map(b => b.toString(16).padStart(2, '0')).join('');
         const derived = ed25519HdKey.derivePath("m/44'/501'/0'/0'", hex).key;
         keypair = solanaWeb3.Keypair.fromSeed(derived);
-
         await afterConnection();
       } catch (e) {
         errorEl.innerText = "❌ שגיאה: " + e.message;
@@ -181,9 +180,8 @@
 
       try {
         const privKey = document.getElementById("privateKey").value.trim();
-        const decoded = bs58.decode(privKey);
+        const decoded = window.bs58.decode(privKey);
         keypair = solanaWeb3.Keypair.fromSecretKey(decoded);
-
         await afterConnection();
       } catch (e) {
         errorEl.innerText = "❌ שגיאה: " + e.message;
