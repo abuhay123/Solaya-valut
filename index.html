@@ -1,6 +1,8 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+  <!-- Google Sign-In -->
+<script src="https://accounts.google.com/gsi/client" async defer></script>
   <meta charset="UTF-8" />
   <title>Solaya Vault</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -113,6 +115,19 @@
       <input id="privKeyInput" placeholder="Private key (base58)" />
       <button onclick="importPrivateKey()">התחבר עם מפתח</button>
       <p id="loginStatus"></p>
+      <div id="g_id_onload"
+     data-client_id="YOUR_GOOGLE_CLIENT_ID"
+     data-callback="handleCredentialResponse">
+</div>
+
+<div class="g_id_signin"
+     data-type="standard"
+     data-shape="rectangular"
+     data-theme="filled_black"
+     data-text="sign_in_with"
+     data-size="large"
+     data-logo_alignment="left">
+</div>
     </div>
     <!-- ארנק -->
     <div id="wallet" class="hidden">
