@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <title>Solaya Vault</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  
+
   <!-- Manifest + Icons -->
   <link rel="manifest" href="manifest.json">
   <link rel="icon" href="icon.png">
@@ -14,16 +14,14 @@
   <meta name="apple-mobile-web-app-title" content="Solaya Vault">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@600&display=swap" rel="stylesheet">
-  
+
   <!-- ספריות -->
-  <script src="https://accounts.google.com/gsi/client" async defer></script>
   <script src="https://cdn.jsdelivr.net/npm/@solana/web3.js@latest/lib/index.iife.min.js"></script>
-  <script src="https://unpkg.com/bip39@3.0.4/browser/bip39.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/bip39@3.0.4/dist/index.browser.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/ed25519-hd-key@1.1.1/dist/index.umd.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/bs58@5.0.0/dist/bs58.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-<!-- טעינת bip39 בדפדפן -->
-<script src="https://unpkg.com/bip39@3.0.4/browser/bip39.min.js"></script>
+
   <style>
     body {
       margin: 0;
@@ -115,46 +113,9 @@
 
 <!-- Splash Screen -->
 <div id="splash">
-  <img src="assets/Icon.png.png" alt="Solaya Logo">
+  <img src="icon.png" alt="Solaya Logo">
   <h1>Solaya Vault</h1>
 </div>
-
-<style>
-  #splash {
-    position: fixed;
-    top: 0; left: 0;
-    width: 100%; height: 100%;
-    background-color: #000;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    z-index: 9999;
-  }
-
-  #splash img {
-    width: 150px;
-    height: auto;
-    margin-bottom: 10px;
-  }
-
-  #splash h1 {
-    color: #00ffee;
-    font-size: 28px;
-    font-weight: bold;
-    margin: 0;
-    animation: glow 2s ease-in-out infinite alternate;
-  }
-
-  @keyframes glow {
-    from {
-      text-shadow: 0 0 10px #00ffee, 0 0 20px #00ffee;
-    }
-    to {
-      text-shadow: 0 0 20px #00ffee, 0 0 30px #00ffee;
-    }
-  }
-</style>
 
 <script>
   window.addEventListener("load", () => {
@@ -180,8 +141,7 @@
   <div id="register">
     <h2> צור ארנק חדש</h2>
     <button onclick="createWallet()">צור ארנק</button>
-    <p id="newMnemonic"></p>
-    <div id="newMnemonic" style="margin-top: 10px; color: #0ff;"></div>
+    <p id="newMnemonic" style="margin-top: 10px; color: #0ff;"></p>
 
     <h3> התחברות עם 12 מילים</h3>
     <input id="mnemonicInput" placeholder="twelve words..." />
@@ -191,20 +151,6 @@
     <input id="privKeyInput" placeholder="Private key (base58)" />
     <button onclick="importPrivateKey()">התחבר עם מפתח</button>
     <p id="loginStatus"></p>
-
-    <!-- התחברות עם גוגל -->
-    <div id="g_id_onload"
-      data-client_id="284055538861-7es2cdmvj19gmkjdt9kvkjtjf7locrkj.apps.googleusercontent.com"
-      data-callback="handleCredentialResponse">
-    </div>
-    <div class="g_id_signin"
-      data-type="standard"
-      data-shape="rectangular"
-      data-theme="filled_black"
-      data-text="sign_in_with"
-      data-size="large"
-      data-logo_alignment="left">
-    </div>
   </div>
 
   <div id="wallet" class="hidden">
@@ -235,43 +181,11 @@
   </div>
 </div>
 
-<!-- פוטר -->
 <footer style="background:#111; color:#ccc; padding:20px; margin-top:40px; font-size:14px; text-align:center;">
   <p>© 2025 Solaya Vault. כל הזכויות שמורות.</p>
-  <p>
-    <a href="#" style="color:#00ffcc; text-decoration:none; margin:0 10px;">מדיניות פרטיות</a> |
-    <a href="#" style="color:#00ffcc; text-decoration:none; margin:0 10px;">תנאי שימוש</a>
-  </p>
-  <p>
-    <a href="https://wa.me/972549665726" target="_blank" style="display:inline-block; background:#25D366; color:white; padding:10px 20px; border-radius:8px; margin-top:10px; text-decoration:none;">
-      📲 יצירת קשר בוואטסאפ
-    </a>
-  </p>
 </footer>
 
-<div style="margin-top: 20px; display: flex; justify-content: center; gap: 20px; align-items: center;">
-  <a href="https://facebook.com" target="_blank">
-    <img src="https://cdn-icons-png.flaticon.com/32/733/733547.png" alt="Facebook">
-  </a>
-  <a href="https://tiktok.com" target="_blank">
-    <img src="https://cdn-icons-png.flaticon.com/512/3046/3046121.png" alt="TikTok" style="width:32px; height:32px;">
-  </a>
-  <a href="https://twitter.com" target="_blank">
-    <img src="https://cdn-icons-png.flaticon.com/32/733/733579.png" alt="Twitter">
-  </a>
-  <a href="https://instagram.com" target="_blank">
-    <img src="https://cdn-icons-png.flaticon.com/32/2111/2111463.png" alt="Instagram">
-  </a>
-</div>
-
 <script>
-  // הסתרת מסך פתיחה לאחר 2 שניות
-  window.onload = () => {
-    setTimeout(() => {
-      document.getElementById('splash').style.display = 'none';
-    }, 2000);
-  };
-
   const connection = new solanaWeb3.Connection(solanaWeb3.clusterApiUrl("mainnet-beta"));
   let keypair;
 
@@ -281,28 +195,28 @@
   }
 
   async function createWallet() {
-  try {
-    const mnemonic = window.bip39.generateMnemonic();
-    const seedBuffer = await window.bip39.mnemonicToSeed(mnemonic);
-    const derivedSeed = ed25519HdKey.derivePath("m/44'/501'/0'/0'", seedBuffer.toString("hex")).key;
-    const secretKey = new Uint8Array(derivedSeed);
-    keypair = solanaWeb3.Keypair.fromSeed(secretKey);
+    try {
+      const mnemonic = bip39.generateMnemonic();
+      const seedBuffer = await bip39.mnemonicToSeed(mnemonic);
+      const derivedSeed = ed25519HdKey.derivePath("m/44'/501'/0'/0'", seedBuffer.toString("hex")).key;
+      const secretKey = new Uint8Array(derivedSeed);
+      keypair = solanaWeb3.Keypair.fromSeed(secretKey);
 
-    document.getElementById("newMnemonic").innerText = "שמור את המילים: " + mnemonic;
-    afterLogin();
-  } catch (e) {
-    alert("שגיאה ביצירת הארנק: " + e.message);
-    console.error(e);
+      document.getElementById("newMnemonic").innerText = "שמור את המילים: " + mnemonic;
+      afterLogin();
+    } catch (e) {
+      alert("שגיאה ביצירת הארנק: " + e.message);
+      console.error(e);
+    }
   }
-}
 
   async function importWallet() {
-  const mnemonic = document.getElementById("mnemonicInput").value.trim();
-  const seed = await window.bip39.mnemonicToSeed(mnemonic);
-  const derived = ed25519HdKey.derivePath("m/44'/501'/0'/0'", seed.toString('hex')).key;
-  keypair = solanaWeb3.Keypair.fromSeed(derived);
-  afterLogin();
-}
+    const mnemonic = document.getElementById("mnemonicInput").value.trim();
+    const seed = await bip39.mnemonicToSeed(mnemonic);
+    const derived = ed25519HdKey.derivePath("m/44'/501'/0'/0'", seed.toString('hex')).key;
+    keypair = solanaWeb3.Keypair.fromSeed(derived);
+    afterLogin();
+  }
 
   async function importPrivateKey() {
     const priv = document.getElementById("privKeyInput").value.trim();
@@ -314,7 +228,6 @@
   async function afterLogin() {
     const address = keypair.publicKey.toBase58();
     document.getElementById("walletAddress").innerText = address;
-
     const balance = await connection.getBalance(keypair.publicKey);
     document.getElementById("walletBalance").innerText = (balance / solanaWeb3.LAMPORTS_PER_SOL).toFixed(4);
     showSection('wallet');
@@ -324,7 +237,6 @@
   async function sendSol() {
     const to = document.getElementById("toAddress").value.trim();
     const lamports = parseFloat(document.getElementById("amount").value.trim()) * solanaWeb3.LAMPORTS_PER_SOL;
-
     const tx = new solanaWeb3.Transaction().add(
       solanaWeb3.SystemProgram.transfer({
         fromPubkey: keypair.publicKey,
@@ -332,7 +244,6 @@
         lamports
       })
     );
-
     const signature = await solanaWeb3.sendAndConfirmTransaction(connection, tx, [keypair]);
     document.getElementById("sendStatus").innerText = "נשלח! עסקה: " + signature;
   }
@@ -342,7 +253,6 @@
     const data = await res.json();
     const prices = data.prices.map(p => p[1]);
     const labels = data.prices.map(p => new Date(p[0]).toLocaleTimeString());
-
     const ctx = document.getElementById("priceChart").getContext("2d");
     new Chart(ctx, {
       type: 'line',
@@ -361,7 +271,6 @@
         }
       }
     });
-
     document.getElementById("marketStatus").innerText = "";
   }
 </script>
