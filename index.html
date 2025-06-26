@@ -280,13 +280,20 @@
   }
 
   async function createWallet() {
+  try {
     const mnemonic = bip39.generateMnemonic();
-    const seed = await bip39.mnemonicToSeed(mnemonic);
-    const derived = ed25519HdKey.derivePath("m/44'/501'/0'/0'", seed.toString('hex')).key;
-    keypair = solanaWeb3.Keypair.fromSeed(derived);
+    const seedBuffer = await bip39.mnemonicToSeed(mnemonic);
+    const derivedSeed = ed25519HdKey.derivePath("m/44'/501'/0'/0'", seedBuffer.toString("hex")).key;
+    const secretKey = new Uint8Array(derivedSeed);
+    keypair = solanaWeb3.Keypair.fromSeed(secretKey);
+
     document.getElementById("newMnemonic").innerText = "שמור את המילים: " + mnemonic;
     afterLogin();
+  } catch (e) {
+    alert("שגיאה ביצירת הארנק: " + e.message);
+    console.error(e);
   }
+}
 
   async function importWallet() {
     const mnemonic = document.getElementById("mnemonicInput").value.trim();
