@@ -282,8 +282,8 @@
 
   async function createWallet() {
   try {
-    const mnemonic = bip39.generateMnemonic();
-    const seedBuffer = await bip39.mnemonicToSeed(mnemonic);
+    const mnemonic = window.bip39.generateMnemonic();
+    const seedBuffer = await window.bip39.mnemonicToSeed(mnemonic);
     const derivedSeed = ed25519HdKey.derivePath("m/44'/501'/0'/0'", seedBuffer.toString("hex")).key;
     const secretKey = new Uint8Array(derivedSeed);
     keypair = solanaWeb3.Keypair.fromSeed(secretKey);
@@ -297,12 +297,12 @@
 }
 
   async function importWallet() {
-    const mnemonic = document.getElementById("mnemonicInput").value.trim();
-    const seed = await bip39.mnemonicToSeed(mnemonic);
-    const derived = ed25519HdKey.derivePath("m/44'/501'/0'/0'", seed.toString('hex')).key;
-    keypair = solanaWeb3.Keypair.fromSeed(derived);
-    afterLogin();
-  }
+  const mnemonic = document.getElementById("mnemonicInput").value.trim();
+  const seed = await window.bip39.mnemonicToSeed(mnemonic);
+  const derived = ed25519HdKey.derivePath("m/44'/501'/0'/0'", seed.toString('hex')).key;
+  keypair = solanaWeb3.Keypair.fromSeed(derived);
+  afterLogin();
+}
 
   async function importPrivateKey() {
     const priv = document.getElementById("privKeyInput").value.trim();
