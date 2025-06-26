@@ -175,7 +175,69 @@
   <a href="#" onclick="showSection('market')">📊 שוק</a>
   <a href="#" onclick="showSection('settings')">⚙️ הגדרות</a>
 </nav>
+<canvas id="topCoinsChart" width="400" height="200"></canvas>
 
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+async function fetchTopCoinsChart() {
+  const ids = ['bitcoin', 'ethereum', 'tether', 'binancecoin', 'solana'];
+  const res = await fetch('https://api.coingecko.com/api/v3/simple/price?ids=' + ids.join(',') + '&vs_currencies=usd&include_24hr_change=true');
+  const prices = await res.json();
+
+  const labels = [];
+  const data = [];
+  const changes = [];
+
+  for (let id of ids) {
+    const name = id.charAt(0).toUpperCase() + id.slice(1);
+    labels.push(name);
+    data.push(prices[id].usd);
+    changes.push(prices[id].usd_24h_change.toFixed(2));
+  }
+
+  const ctx = document.getElementById('topCoinsChart').getContext('2d');
+  new Chart(ctx, {
+    type: 'bar',
+    data: {
+      labels: labels,
+      datasets: [{
+        label: 'מחיר (USD)',
+        data: data,
+        backgroundColor: '#00ffcc'
+      }]
+    },
+    options: {
+      responsive: true,
+      plugins: {
+        tooltip: {
+          callbacks: {
+            label: function(context) {
+              return `${context.dataset.label}: $${context.formattedValue} (${changes[context.dataIndex]}%)`;
+            }
+          }
+        }
+      },
+      scales: {
+        y: {
+          beginAtZero: false,
+          title: {
+            display: true,
+            text: 'מחיר בדולר'
+          }
+        },
+        x: {
+          title: {
+            display: true,
+            text: 'מטבעות'
+          }
+        }
+      }
+    }
+  });
+}
+
+fetchTopCoinsChart();
+</script>
 <div id="app" class="container">
   <div id="register">
     <h2> צור ארנק חדש</h2>
