@@ -175,7 +175,103 @@
   <a href="#" onclick="showSection('market')">📊 שוק</a>
   <a href="#" onclick="showSection('settings')">⚙️ הגדרות</a>
 </nav>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Solaya Vault – גרף שוק מתקדם</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    body { background: #0d0d0d; color: #fff; font-family: Arial, sans-serif; margin: 0; padding: 20px; }
+    #controls { display: flex; gap: 10px; margin-bottom: 20px; }
+    #controls button { flex: 1; padding: 10px; border: none; background: #222; color: #00ffcc; font-weight: bold; cursor: pointer; border-radius: 4px; }
+    #controls button.active { background: #00ffcc; color: #000; }
+    #chartContainer { position: relative; height: 360px; }
+  </style>
+</head>
+<body>
 
+<h2>גרף מחיר המטבעות הפופולריים</h2>
+
+<div id="controls">
+  <button data-range="1" class="active">1H</button>
+  <button data-range="24">1D</button>
+  <button data-range="168">1W</button>
+</div>
+
+<div id="chartContainer">
+  <canvas id="priceChart"></canvas>
+</div>
+
+<script>
+const ctx = document.getElementById('priceChart').getContext('2d');
+let myChart;
+
+const fetchAndRender = async (rangeHours) => {
+  // מטבע ספציפי לשם הדוגמה (ביטקוין), אפשר להחליף
+  const coin = 'bitcoin';
+  const res = await fetch(`https://api.coingecko.com/api/v3/coins/${coin}/market_chart?vs_currency=usd&days=${rangeHours/24}&interval=hourly`);
+  const data = await res.json();
+
+  const times = data.prices.map(p => new Date(p[0]));
+  const prices = data.prices.map(p => p[1]);
+  const change = (((prices[prices.length-1] - prices[0]) / prices[0]) * 100).toFixed(2);
+
+  const bg = ctx.createLinearGradient(0, 0, 0, 360);
+  bg.addColorStop(0, 'rgba(0,255,204,0.3)');
+  bg.addColorStop(1, 'rgba(0,255,204,0)');
+
+  if (myChart) myChart.destroy();
+  myChart = new Chart(ctx, {
+    type: 'line',
+    data: {
+      labels: times,
+      datasets: [{
+        label: `מחיר ${coin.toUpperCase()} (שינוי: ${change}%)`,
+        data: prices,
+        borderColor: '#00ffcc',
+        backgroundColor: bg,
+        tension: 0.3,
+        pointRadius: 0
+      }]
+    },
+    options: {
+      responsive: true,
+      scales: {
+        x: {
+          type: 'time',
+          time: { unit: rangeHours <= 1 ? 'minute' : 'hour', tooltipFormat: 'HH:mm, MMM D' },
+          ticks: { color: '#ccc' },
+          grid: { color: '#333' }
+        },
+        y: {
+          ticks: { color: '#ccc' },
+          grid: { color: '#333' }
+        }
+      },
+      plugins: {
+        legend: { display: true, labels: { color: '#00ffcc' } },
+        tooltip: { mode: 'index', intersect:false }
+      }
+    }
+  });
+};
+
+document.getElementById('controls').addEventListener('click', e => {
+  if (e.target.tagName === 'BUTTON') {
+    document.querySelectorAll('#controls button').forEach(btn => btn.classList.remove('active'));
+    e.target.classList.add('active');
+    fetchAndRender(parseInt(e.target.dataset.range));
+  }
+});
+
+// אתחול ברמת timeframe ברירת מחדל
+fetchAndRender(1);
+</script>
+
+</body>
+</html>
 
 <div id="app" class="container">
   <div id="register">
