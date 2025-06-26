@@ -4,13 +4,16 @@
   <meta charset="UTF-8" />
   <title>Solaya Vault</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <!-- Manifest + Icons -->
   <link rel="manifest" href="manifest.json">
-  <link rel="icon" href="assets/icon.png">
-  <link rel="apple-touch-icon" href="assets/icon.png">
+  <link rel="icon" href="icon.png">
+  <link rel="apple-touch-icon" href="icon.png">
   <meta name="theme-color" content="#000000">
-  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700&display=swap" rel="stylesheet">
-
-  <!-- ספריות -->
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-title" content="Solaya Vault">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@600&display=swap" rel="stylesheet">
   <script src="https://cdn.jsdelivr.net/npm/@solana/web3.js@latest/lib/index.iife.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/bip39@3.0.4/dist/index.browser.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/ed25519-hd-key@1.1.1/dist/index.umd.js"></script>
@@ -18,226 +21,185 @@
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
   <style>
-    * { box-sizing: border-box; direction: rtl; }
     body {
       margin: 0;
       font-family: 'Orbitron', sans-serif;
-      background: linear-gradient(145deg, #0d0d0d, #1a1a1a);
-      color: #fff;
+      background: #0d0d0d;
+      color: #ffffff;
     }
     header {
       background: #111;
-      padding: 15px 20px;
+      padding: 20px;
+      box-shadow: 0 4px 12px #000;
       text-align: center;
-      border-bottom: 2px solid #00ffc3;
     }
     header h1 {
+      font-size: 28px;
       margin: 0;
-      font-size: 24px;
-      color: #00ffc3;
-      animation: pulse 2s infinite;
+      animation: glow 2s infinite ease-in-out;
     }
-    @keyframes pulse {
-      0%, 100% { text-shadow: 0 0 5px #00ffc3; }
-      50% { text-shadow: 0 0 15px #00ffc3; }
+    @keyframes glow {
+      0%, 100% { color: #fff; text-shadow: 0 0 10px #00ffcc; }
+      50% { color: #00ffcc; text-shadow: 0 0 20px #00ffcc; }
     }
     nav {
-      background: #1a1a1a;
       display: flex;
       justify-content: space-around;
+      background: #1a1a1a;
       padding: 10px 0;
-      border-bottom: 1px solid #333;
     }
     nav a {
-      color: #00ffc3;
+      color: #00ffcc;
       text-decoration: none;
       font-weight: bold;
-      transition: 0.3s;
+      padding: 8px 16px;
+      border-radius: 4px;
+      transition: background 0.3s;
     }
     nav a:hover {
-      text-shadow: 0 0 10px #00ffc3;
+      background: #00ffcc;
+      color: #000;
     }
-    main { padding: 20px; }
-    input, button, select {
-      display: block;
+    .container {
+      padding: 20px;
+      max-width: 600px;
+      margin: auto;
+    }
+    input, button {
       width: 100%;
-      margin: 10px auto;
       padding: 12px;
-      font-size: 16px;
+      margin: 10px 0;
       border: none;
       border-radius: 6px;
-    }
-    input, select {
-      background: #1e1e1e;
-      color: #fff;
+      font-size: 16px;
     }
     button {
-      background: #00ffc3;
+      background-color: #00ffcc;
       color: #000;
       font-weight: bold;
       cursor: pointer;
     }
-    .hidden { display: none; }
-    .section {
-      background: rgba(20,20,20,0.9);
-      padding: 20px;
-      border-radius: 12px;
-      margin-bottom: 20px;
-      box-shadow: 0 0 10px #000;
-      backdrop-filter: blur(4px);
+    .hidden {
+      display: none;
     }
-    .profile { text-align: right; margin-bottom: 20px; }
-    .profile p { margin: 5px 0; }
     canvas {
-      background: #1c1c1c;
-      border-radius: 10px;
-      margin-top: 20px;
-      width: 100%;
+      margin-top: 30px;
     }
   </style>
 </head>
-
 <body>
-<header><h1>Solaya Vault</h1></header>
+  <header>
+    <h1>Solaya Vault</h1>
+  </header>
+  <nav>
+    <a href="#" onclick="showSection('register')">📥 התחברות</a>
+    <a href="#" onclick="showSection('wallet')">🧾 הארנק</a>
+    <a href="#" onclick="showSection('market')">📊 שוק</a>
+    <a href="#" onclick="showSection('settings')">⚙️ הגדרות</a>
+  </nav>
 
-<nav>
-  <a href="#" onclick="showSection('register')">רישום</a>
-  <a href="#" onclick="showSection('login')">התחברות</a>
-  <a href="#" onclick="showSection('wallet')">הארנק</a>
-  <a href="#" onclick="showSection('trade')">מסחר</a>
-  <a href="#" onclick="showSection('settings')">הגדרות</a>
-</nav>
+  <div id="app" class="container">
+    <!-- הרשמה/התחברות -->
+    <div id="register">
+      <h2>🚀 צור ארנק חדש</h2>
+      <button onclick="createWallet()">צור ארנק</button>
+      <p id="newMnemonic"></p>
 
-<main>
-  <!-- רישום -->
-  <div id="register" class="section">
-    <h2>🧾 רישום</h2>
-    <input id="regName" placeholder="שם פרטי" />
-    <input id="regLast" placeholder="שם משפחה" />
-    <input id="regEmail" placeholder="אימייל" />
-    <input id="regPass" type="password" placeholder="סיסמה" />
-    <button onclick="registerUser()">📥 רישום</button>
-  </div>
+      <h3>🔐 התחברות עם 12 מילים</h3>
+      <input id="mnemonicInput" placeholder="twelve words..." />
+      <button onclick="importWallet()">התחבר</button>
 
-  <!-- התחברות -->
-  <div id="login" class="section hidden">
-    <h2>🔐 התחברות</h2>
-    <input id="loginEmail" placeholder="אימייל" />
-    <input id="loginPass" type="password" placeholder="סיסמה" />
-    <button onclick="loginUser()">🔓 התחבר</button>
-  </div>
-  <!-- ארנק -->
-  <div id="wallet" class="section hidden">
-    <h2>💼 הארנק שלי</h2>
-    <p><b>כתובת:</b> <span id="pubkey"></span></p>
-    <p><b>יתרה:</b> <span id="balance">...</span> SOL</p>
-    <input id="mnemonic" placeholder="12 מילים ליצירת ארנק" />
-    <button onclick="connectWallet()">🎯 התחבר עם מילים</button>
-    <input id="privateKey" placeholder="Private Key (Base58)" />
-    <button onclick="connectWithPrivateKey()">🔑 התחבר עם מפתח פרטי</button>
-    <input id="toAddress" placeholder="כתובת יעד לשליחה" />
-    <input id="amount" placeholder="כמות SOL לשליחה" />
-    <button onclick="sendSol()">🚀 שלח SOL</button>
-    <p id="tx-status"></p>
-  </div>
-
-  <!-- מסחר -->
-  <div id="trade" class="section hidden">
-    <h2>📈 מסחר בטוקנים (אמיתי)</h2>
-    <input id="mintAddress" placeholder="Mint Address של הטוקן" />
-    <input id="tokenAmount" placeholder="כמות לרכישה/מכירה" />
-    <button onclick="buyToken()">🟢 קנייה</button>
-    <button onclick="sellToken()">🔴 מכירה</button>
-    <p id="tokenStatus"></p>
-    <canvas id="priceChart" width="400" height="200"></canvas>
-  </div>
-
-  <!-- הגדרות -->
-  <div id="settings" class="section hidden">
-    <h2>⚙️ הגדרות</h2>
-    <div class="profile">
-      <p><b>שם:</b> <span id="profName"></span></p>
-      <p><b>אימייל:</b> <span id="profEmail"></span></p>
+      <h3>🔑 התחברות עם Private Key</h3>
+      <input id="privKeyInput" placeholder="Private key (base58)" />
+      <button onclick="importPrivateKey()">התחבר עם מפתח</button>
+      <p id="loginStatus"></p>
     </div>
-    <button onclick="logout()">🚪 התנתקות</button>
+    <!-- ארנק -->
+    <div id="wallet" class="hidden">
+      <h2>🧾 הארנק שלי</h2>
+      <p><strong>כתובת:</strong> <span id="walletAddress"></span></p>
+      <p><strong>יתרה:</strong> <span id="walletBalance"></span> SOL</p>
+
+      <h3>שליחת SOL</h3>
+      <input id="toAddress" placeholder="כתובת יעד" />
+      <input id="amount" placeholder="סכום ב-SOL" />
+      <button onclick="sendSol()">שלח SOL</button>
+      <p id="sendStatus"></p>
+
+      <h3>שליחת טוקן SPL</h3>
+      <input id="tokenMint" placeholder="Mint Address של הטוקן" />
+      <input id="tokenTo" placeholder="כתובת יעד" />
+      <input id="tokenAmount" placeholder="כמות" />
+      <button onclick="sendSPL()">שלח טוקן</button>
+      <p id="splStatus"></p>
+    </div>
+
+    <!-- שוק -->
+    <div id="market" class="hidden">
+      <h2>📈 נתוני שוק</h2>
+      <canvas id="priceChart" height="200"></canvas>
+      <p id="marketStatus">טוען...</p>
+    </div>
+
+    <!-- הגדרות -->
+    <div id="settings" class="hidden">
+      <h2>⚙️ הגדרות</h2>
+      <p>כאן תוכל להוסיף פרטים נוספים, כמו:</p>
+      <ul>
+        <li>🔒 החלפת סיסמה</li>
+        <li>👤 פרופיל אישי</li>
+        <li>📱 Face ID (בעתיד)</li>
+      </ul>
+    </div>
   </div>
-</main>
 
-<script>
-  let keypair;
-  const connection = new solanaWeb3.Connection(solanaWeb3.clusterApiUrl("mainnet-beta"));
+  <script>
+    const connection = new solanaWeb3.Connection(solanaWeb3.clusterApiUrl("mainnet-beta"));
+    let keypair;
 
-  function showSection(id) {
-    document.querySelectorAll('.section').forEach(s => s.classList.add('hidden'));
-    document.getElementById(id).classList.remove('hidden');
-    if (id === "settings") loadProfile();
-    if (id === "trade") drawChart();
-  }
-
-  function registerUser() {
-    const user = {
-      name: document.getElementById("regName").value,
-      last: document.getElementById("regLast").value,
-      email: document.getElementById("regEmail").value,
-      pass: document.getElementById("regPass").value
-    };
-    localStorage.setItem("user", JSON.stringify(user));
-    alert("✅ נרשמת בהצלחה!");
-    showSection("login");
-  }
-
-  function loginUser() {
-    const email = document.getElementById("loginEmail").value;
-    const pass = document.getElementById("loginPass").value;
-    const user = JSON.parse(localStorage.getItem("user"));
-    if (user && user.email === email && user.pass === pass) {
-      alert("🎉 התחברת בהצלחה");
-      showSection("wallet");
-    } else {
-      alert("❌ פרטי התחברות שגויים");
+    function showSection(id) {
+      document.querySelectorAll('#app > div').forEach(div => div.classList.add('hidden'));
+      document.getElementById(id).classList.remove('hidden');
     }
-  }
 
-  function loadProfile() {
-    const u = JSON.parse(localStorage.getItem("user"));
-    if (u) {
-      document.getElementById("profName").innerText = u.name + " " + u.last;
-      document.getElementById("profEmail").innerText = u.email;
+    async function createWallet() {
+      const mnemonic = bip39.generateMnemonic();
+      const seed = await bip39.mnemonicToSeed(mnemonic);
+      const derived = ed25519HdKey.derivePath("m/44'/501'/0'/0'", seed.toString('hex')).key;
+      keypair = solanaWeb3.Keypair.fromSeed(derived);
+      document.getElementById("newMnemonic").innerText = "שמור את המילים: " + mnemonic;
+      afterLogin();
     }
-  }
 
-  async function connectWallet() {
-    const mnemonic = document.getElementById("mnemonic").value.trim();
-    if (mnemonic.split(" ").length !== 12) return alert("❌ יש להזין בדיוק 12 מילים.");
-    const seed = await bip39.mnemonicToSeed(mnemonic);
-    const hex = Array.from(seed).map(b => b.toString(16).padStart(2, '0')).join('');
-    const derived = ed25519HdKey.derivePath("m/44'/501'/0'/0'", hex).key;
-    keypair = solanaWeb3.Keypair.fromSeed(derived);
-    await afterConnection();
-  }
-
-  async function connectWithPrivateKey() {
-    try {
-      const privKey = document.getElementById("privateKey").value.trim();
-      keypair = solanaWeb3.Keypair.fromSecretKey(bs58.decode(privKey));
-      await afterConnection();
-    } catch (e) {
-      alert("❌ שגיאה: " + e.message);
+    async function importWallet() {
+      const mnemonic = document.getElementById("mnemonicInput").value.trim();
+      const seed = await bip39.mnemonicToSeed(mnemonic);
+      const derived = ed25519HdKey.derivePath("m/44'/501'/0'/0'", seed.toString('hex')).key;
+      keypair = solanaWeb3.Keypair.fromSeed(derived);
+      afterLogin();
     }
-  }
 
-  async function afterConnection() {
-    const pubkey = keypair.publicKey.toBase58();
-    document.getElementById("pubkey").innerText = pubkey;
-    const balance = await connection.getBalance(keypair.publicKey);
-    document.getElementById("balance").innerText = (balance / solanaWeb3.LAMPORTS_PER_SOL).toFixed(4);
-  }
+    async function importPrivateKey() {
+      const priv = document.getElementById("privKeyInput").value.trim();
+      const decoded = bs58.decode(priv);
+      keypair = solanaWeb3.Keypair.fromSecretKey(decoded);
+      afterLogin();
+    }
 
-  async function sendSol() {
-    const to = document.getElementById("toAddress").value.trim();
-    const lamports = parseFloat(document.getElementById("amount").value) * solanaWeb3.LAMPORTS_PER_SOL;
-    const txStatus = document.getElementById("tx-status");
-    try {
+    async function afterLogin() {
+      const address = keypair.publicKey.toBase58();
+      document.getElementById("walletAddress").innerText = address;
+
+      const balance = await connection.getBalance(keypair.publicKey);
+      document.getElementById("walletBalance").innerText = (balance / solanaWeb3.LAMPORTS_PER_SOL).toFixed(4);
+      showSection('wallet');
+      loadChart();
+    }
+
+    async function sendSol() {
+      const to = document.getElementById("toAddress").value.trim();
+      const lamports = parseFloat(document.getElementById("amount").value.trim()) * solanaWeb3.LAMPORTS_PER_SOL;
+
       const tx = new solanaWeb3.Transaction().add(
         solanaWeb3.SystemProgram.transfer({
           fromPubkey: keypair.publicKey,
@@ -245,75 +207,62 @@
           lamports
         })
       );
-      const sig = await solanaWeb3.sendAndConfirmTransaction(connection, tx, [keypair]);
-      txStatus.innerText = "✅ נשלח בהצלחה:\n" + sig;
-    } catch (err) {
-      txStatus.innerText = "❌ שגיאה: " + err.message;
-    }
-  }
 
-  function logout() {
-    location.reload();
-  }
-  function drawChart() {
-    const ctx = document.getElementById('priceChart').getContext('2d');
-    new Chart(ctx, {
-      type: 'line',
-      data: {
-        labels: ['01:00', '05:00', '09:00', '13:00', '17:00', '21:00'],
-        datasets: [{
-          label: 'מחיר טוקן (USD)',
-          data: [1.01, 1.10, 1.08, 1.25, 1.22, 1.31],
-          borderColor: '#00ffc3',
-          backgroundColor: 'rgba(0,255,195,0.1)',
-          tension: 0.4
-        }]
-      },
-      options: {
-        responsive: true,
-        scales: {
-          x: { ticks: { color: '#fff' } },
-          y: { ticks: { color: '#fff' } }
+      const signature = await solanaWeb3.sendAndConfirmTransaction(connection, tx, [keypair]);
+      document.getElementById("sendStatus").innerText = "נשלח! עסקה: " + signature;
+    }
+
+    async function sendSPL() {
+      const mint = new solanaWeb3.PublicKey(document.getElementById("tokenMint").value.trim());
+      const to = new solanaWeb3.PublicKey(document.getElementById("tokenTo").value.trim());
+      const amount = parseFloat(document.getElementById("tokenAmount").value.trim()) * 1e6;
+
+      const token = new splToken.Token(connection, mint, splToken.TOKEN_PROGRAM_ID, keypair);
+      const fromTokenAccount = await token.getOrCreateAssociatedAccountInfo(keypair.publicKey);
+      const toTokenAccount = await token.getOrCreateAssociatedAccountInfo(to);
+
+      const tx = new solanaWeb3.Transaction().add(
+        splToken.Token.createTransferInstruction(
+          splToken.TOKEN_PROGRAM_ID,
+          fromTokenAccount.address,
+          toTokenAccount.address,
+          keypair.publicKey,
+          [],
+          amount
+        )
+      );
+
+      const signature = await solanaWeb3.sendAndConfirmTransaction(connection, tx, [keypair]);
+      document.getElementById("splStatus").innerText = "נשלח טוקן! עסקה: " + signature;
+    }
+
+    async function loadChart() {
+      const res = await fetch("https://api.coingecko.com/api/v3/coins/solana/market_chart?vs_currency=usd&days=1");
+      const data = await res.json();
+      const prices = data.prices.map(p => p[1]);
+      const labels = data.prices.map(p => new Date(p[0]).toLocaleTimeString());
+
+      const ctx = document.getElementById("priceChart").getContext("2d");
+      new Chart(ctx, {
+        type: 'line',
+        data: {
+          labels: labels,
+          datasets: [{
+            label: 'מחיר SOL',
+            data: prices,
+            borderColor: '#00ffcc',
+            fill: false
+          }]
         },
-        plugins: {
-          legend: { labels: { color: '#fff' } }
+        options: {
+          scales: {
+            y: { beginAtZero: false }
+          }
         }
-      }
-    });
-  }
+      });
 
-  async function buyToken() {
-    const mint = document.getElementById("mintAddress").value.trim();
-    const amount = parseFloat(document.getElementById("tokenAmount").value.trim());
-    const status = document.getElementById("tokenStatus");
-
-    if (!mint || isNaN(amount)) return alert("❌ נא להזין Mint וכמות חוקיים");
-
-    try {
-      const mintPubkey = new solanaWeb3.PublicKey(mint);
-      const token = new solanaWeb3.PublicKey(mint);
-      status.innerText = `✅ (דמה) נרכשה כמות ${amount} של טוקן עם mint:\n${mint}`;
-    } catch (err) {
-      status.innerText = "❌ שגיאה בקנייה: " + err.message;
+      document.getElementById("marketStatus").innerText = "";
     }
-  }
-
-  async function sellToken() {
-    const mint = document.getElementById("mintAddress").value.trim();
-    const amount = parseFloat(document.getElementById("tokenAmount").value.trim());
-    const status = document.getElementById("tokenStatus");
-
-    if (!mint || isNaN(amount)) return alert("❌ נא להזין Mint וכמות חוקיים");
-
-    try {
-      const token = new solanaWeb3.PublicKey(mint);
-      status.innerText = `✅ (דמה) נמכרה כמות ${amount} של טוקן עם mint:\n${mint}`;
-    } catch (err) {
-      status.innerText = "❌ שגיאה במכירה: " + err.message;
-    }
-  }
-
-  showSection('register');
-</script>
+  </script>
 </body>
 </html>
