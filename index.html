@@ -308,6 +308,18 @@
   <div id="market" class="hidden">
     <h2> נתוני שוק</h2>
     <canvas id="priceChart" height="200"></canvas>
+    <!-- סרגל חיפוש -->
+<div style="margin-top:30px;">
+  <h3>🔍 חיפוש מטבע</h3>
+  <input id="searchCoinInput" placeholder="לדוגמה: solana, bitcoin..." onkeyup="searchCoin()" style="padding:10px; width:100%; border-radius:6px;"/>
+  <div id="searchResult" style="margin-top:10px; color:#0ff;"></div>
+</div>
+
+<!-- מטבעות פופולריים -->
+<div id="trendingCoins" style="background:#111; padding:20px; border-radius:10px; margin-top:30px;">
+  <h3>🚀 מטבעות פופולריים כרגע</h3>
+  <div id="trendingList">טוען...</div>
+</div>
     <p id="marketStatus"><h2>📈 גרף מחיר המטבעות הפופולריים</h2>
 
 <div class="btns">
@@ -367,7 +379,10 @@
     });
   }
 
-  window.addEventListener("DOMContentLoaded", () => fetchData("1"));
+  window.addEventListener("DOMContentLoaded", () => {
+  fetchData("1");
+  loadTrendingCoins();
+});
 </script>
 
 <style>
@@ -536,6 +551,41 @@
 
     document.getElementById("marketStatus").innerText = "";
   }
+  // חיפוש מטבע לפי שם
+async function searchCoin() {
+  const query = document.getElementById("searchCoinInput").value.trim();
+  if (!query) {
+    document.getElementById("searchResult").innerHTML = "";
+    return;
+  }
+
+  const res = await fetch(`https://api.coingecko.com/api/v3/search?query=${query}`);
+  const data = await res.json();
+
+  if (data.coins.length === 0) {
+    document.getElementById("searchResult").innerText = "לא נמצאו תוצאות.";
+    return;
+  }
+
+  const coin = data.coins[0];
+  document.getElementById("searchResult").innerHTML = `
+    <strong>${coin.name} (${coin.symbol.toUpperCase()})</strong><br>
+    🔗 <a href="https://www.coingecko.com/en/coins/${coin.id}" target="_blank" style="color:#0ff;">צפה באתר</a>
+  `;
+}
+
+// טעינת מטבעות חמים
+async function loadTrendingCoins() {
+  const res = await fetch("https://api.coingecko.com/api/v3/search/trending");
+  const data = await res.json();
+  const trendingHTML = data.coins.map(c => `
+    <div style="margin-bottom:10px; border-bottom:1px solid #333; padding-bottom:5px;">
+      🔥 <strong>${c.item.name}</strong> (${c.item.symbol.toUpperCase()})<br>
+      דירוג: ${c.item.market_cap_rank || "לא זמין"}
+    </div>
+  `).join('');
+  document.getElementById("trendingList").innerHTML = trendingHTML;
+}
 </script>
 </body>
 </html>
