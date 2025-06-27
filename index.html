@@ -192,7 +192,76 @@
 </head>
 <body>
 
+<canvas id="multiChart" width="400" height="200"></canvas>
+<div>
+  <button onclick="changeRange('1')" id="btn-1">1H</button>
+  <button onclick="changeRange('24')" id="btn-24">1D</button>
+  <button onclick="changeRange('168')" id="btn-168">1W</button>
+</div>
 
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+const coins = ['bitcoin','ethereum','binancecoin','ripple','solana'];
+let rangeHours = '1';
+let chart;
+
+async function fetchPrices() {
+  const promises = coins.map(id =>
+    fetch(`https://api.coingecko.com/api/v3/coins/${id}/market_chart?vs_currency=usd&days=${rangeHours/24}`)
+      .then(r => r.json())
+  );
+  const results = await Promise.all(promises);
+  return results.map(res => res.prices.map[p => ({t: p[0], y: p[1]})]);
+}
+
+// מחזיר מערך נתונים לפורמט Chart.js
+async function prepareData() {
+  const raw = await fetchPrices();
+  return raw.map((prices, idx) => ({
+    label: coins[idx],
+    data: prices.map(p=>({x: p.t, y: p.y})),
+    borderColor: ['#f39c12','#8e44ad','#27ae60','#3498db','#e74c3c'][idx],
+    fill: false,
+  }));
+}
+
+async function drawChart() {
+  const datasets = await prepareData();
+  const ctx = document.getElementById('multiChart').getContext('2d');
+  if (chart) chart.destroy();
+  chart = new Chart(ctx, {
+    type: 'line',
+    data: { datasets },
+    options: {
+      scales: {
+        x: {
+          type: 'time',
+          time: { unit: rangeHours === '1' ? 'minute' : rangeHours==='24'?'hour':'day' },
+          title: { display: true, text: 'זמן' }
+        },
+        y: { title: { display: true, text: 'מחיר (USD)' } }
+      },
+      plugins: {
+        legend: { position: 'bottom' },
+        tooltip: { mode: 'index', intersect: false }
+      },
+      animation: false,
+      responsive: true
+    }
+  });
+}
+
+function changeRange(hours) {
+  rangeHours = hours;
+  document.querySelectorAll('button').forEach(b=>b.style.background='');
+  document.getElementById('btn-'+hours).style.background='#00ffcc';
+  drawChart();
+}
+
+// הפעלה ראשונית + רענון אוטומטי כל דקה
+changeRange('1');
+setInterval(() => drawChart(), 60000);
+</script>
 </body>
 </html>
 
