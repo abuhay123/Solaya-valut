@@ -4,7 +4,7 @@ async function askAI(question) {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
-      "Authorization": "Bearer sk-proj-..." // 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
+      "Authorization": "Bearer sk-proj-..." //
     },
     body: JSON.stringify({
       model: "gpt-3.5-turbo",
