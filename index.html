@@ -229,7 +229,12 @@
     }, 2000);
   });
 </script>
-
+<script>
+  function createWallet() {
+    const mnemonic = window.bip39.generateMnemonic(); // זה יעבוד רק אם השורה למעלה נטענה לפני כן
+    console.log("Mnemonic:", mnemonic);
+  }
+</script>
 <header>
   <h1>Solaya Vault</h1>
 </header>
