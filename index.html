@@ -66,23 +66,36 @@
       0%, 100% { color: #fff; text-shadow: 0 0 10px #00ffcc; }
       50% { color: #00ffcc; text-shadow: 0 0 20px #00ffcc; }
     }
-    nav {
+        nav {
       display: flex;
       justify-content: space-around;
       background: #1a1a1a;
-      padding: 10px 0;
+      padding: 12px 0;
+      box-shadow: 0 4px 8px #000;
     }
+
     nav a {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
       color: #00ffcc;
       text-decoration: none;
       font-weight: bold;
-      padding: 8px 16px;
-      border-radius: 4px;
-      transition: background 0.3s;
+      transition: transform 0.2s ease, color 0.2s ease;
     }
+
     nav a:hover {
-      background: #00ffcc;
-      color: #000;
+      transform: scale(1.1);
+      color: #00ffee;
+    }
+
+    nav svg {
+      margin-bottom: 4px;
+      transition: transform 0.3s;
+    }
+
+    nav a:hover svg {
+      transform: rotate(10deg);
     }
     .container {
       padding: 20px;
