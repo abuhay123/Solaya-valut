@@ -192,83 +192,93 @@
 </head>
 <body>
 
-<h2>גרף מחיר המטבעות הפופולריים</h2>
+<h2>📈 גרף מחיר המטבעות הפופולריים</h2>
 
-<div id="controls">
-  <button data-range="1" class="active">1H</button>
-  <button data-range="24">1D</button>
-  <button data-range="168">1W</button>
+<div class="btns">
+  <button onclick="fetchData('1')" id="btn1H">1H</button>
+  <button onclick="fetchData('24')" id="btn1D">1D</button>
+  <button onclick="fetchData('168')" id="btn1W">1W</button>
 </div>
 
-<div id="chartContainer">
-  <canvas id="priceChart"></canvas>
-</div>
+<canvas id="chart" height="400"></canvas>
+
+<!-- Chart.js + Adapter לזמן -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns"></script>
 
 <script>
-const ctx = document.getElementById('priceChart').getContext('2d');
-let myChart;
+  let chart;
 
-const fetchAndRender = async (rangeHours) => {
-  // מטבע ספציפי לשם הדוגמה (ביטקוין), אפשר להחליף
-  const coin = 'bitcoin';
-  const res = await fetch(`https://api.coingecko.com/api/v3/coins/${coin}/market_chart?vs_currency=usd&days=${rangeHours/24}&interval=hourly`);
-  const data = await res.json();
+  async function fetchData(hours) {
+    document.querySelectorAll(".btns button").forEach(btn => btn.classList.remove("active"));
+    document.getElementById("btn" + (hours === "1" ? "1H" : hours === "24" ? "1D" : "1W")).classList.add("active");
 
-  const times = data.prices.map(p => new Date(p[0]));
-  const prices = data.prices.map(p => p[1]);
-  const change = (((prices[prices.length-1] - prices[0]) / prices[0]) * 100).toFixed(2);
+    const res = await fetch(`https://api.coingecko.com/api/v3/coins/solana/market_chart?vs_currency=usd&days=${hours / 24}`);
+    const data = await res.json();
+    const prices = data.prices.map(p => ({ x: new Date(p[0]), y: p[1] }));
 
-  const bg = ctx.createLinearGradient(0, 0, 0, 360);
-  bg.addColorStop(0, 'rgba(0,255,204,0.3)');
-  bg.addColorStop(1, 'rgba(0,255,204,0)');
+    if (chart) chart.destroy();
 
-  if (myChart) myChart.destroy();
-  myChart = new Chart(ctx, {
-    type: 'line',
-    data: {
-      labels: times,
-      datasets: [{
-        label: `מחיר ${coin.toUpperCase()} (שינוי: ${change}%)`,
-        data: prices,
-        borderColor: '#00ffcc',
-        backgroundColor: bg,
-        tension: 0.3,
-        pointRadius: 0
-      }]
-    },
-    options: {
-      responsive: true,
-      scales: {
-        x: {
-          type: 'time',
-          time: { unit: rangeHours <= 1 ? 'minute' : 'hour', tooltipFormat: 'HH:mm, MMM D' },
-          ticks: { color: '#ccc' },
-          grid: { color: '#333' }
-        },
-        y: {
-          ticks: { color: '#ccc' },
-          grid: { color: '#333' }
-        }
+    chart = new Chart(document.getElementById('chart'), {
+      type: 'line',
+      data: {
+        datasets: [{
+          label: 'מחיר SOL',
+          data: prices,
+          borderColor: '#00ffcc',
+          backgroundColor: '#00ffcc22',
+          fill: true,
+          tension: 0.3
+        }]
       },
-      plugins: {
-        legend: { display: true, labels: { color: '#00ffcc' } },
-        tooltip: { mode: 'index', intersect:false }
+      options: {
+        plugins: {
+          legend: { labels: { color: '#fff' } }
+        },
+        scales: {
+          x: {
+            type: 'time',
+            time: {
+              unit: hours === "1" ? "minute" : "hour"
+            },
+            ticks: { color: '#ccc' }
+          },
+          y: {
+            ticks: { color: '#ccc' }
+          }
+        }
       }
-    }
-  });
-};
-
-document.getElementById('controls').addEventListener('click', e => {
-  if (e.target.tagName === 'BUTTON') {
-    document.querySelectorAll('#controls button').forEach(btn => btn.classList.remove('active'));
-    e.target.classList.add('active');
-    fetchAndRender(parseInt(e.target.dataset.range));
+    });
   }
-});
 
-// אתחול ברמת timeframe ברירת מחדל
-fetchAndRender(1);
+  window.addEventListener("DOMContentLoaded", () => fetchData("1"));
 </script>
+
+<style>
+  .btns {
+    margin: 20px 0;
+  }
+  .btns button {
+    background-color: #00ffcc;
+    color: #000;
+    border: none;
+    padding: 8px 16px;
+    margin: 0 5px;
+    border-radius: 6px;
+    font-weight: bold;
+    cursor: pointer;
+  }
+  .btns button.active {
+    background-color: #004d40;
+    color: #00ffcc;
+  }
+  canvas {
+    width: 100%;
+    max-width: 100%;
+    background: #1a1a1a;
+    border-radius: 8px;
+  }
+</style>
 
 </body>
 </html>
