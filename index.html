@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+ק<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
@@ -192,7 +192,57 @@
 </head>
 <body>
 
-<h2>📈 גרף מחיר המטבעות הפופולריים</h2>
+
+</body>
+</html>
+
+<div id="app" class="container">
+  <div id="register">
+    <h2> צור ארנק חדש</h2>
+    <button onclick="createWallet()">צור ארנק</button>
+    <p id="newMnemonic"></p>
+    <div id="newMnemonic" style="margin-top: 10px; color: #0ff;"></div>
+
+    <h3> התחברות עם 12 מילים</h3>
+    <input id="mnemonicInput" placeholder="twelve words..." />
+    <button onclick="importWallet()">התחבר</button>
+
+    <h3> התחברות עם Private Key</h3>
+    <input id="privKeyInput" placeholder="Private key (base58)" />
+    <button onclick="importPrivateKey()">התחבר עם מפתח</button>
+    <p id="loginStatus"></p>
+
+    <!-- התחברות עם גוגל -->
+    <div id="g_id_onload"
+      data-client_id="284055538861-7es2cdmvj19gmkjdt9kvkjtjf7locrkj.apps.googleusercontent.com"
+      data-callback="handleCredentialResponse">
+    </div>
+    <div class="g_id_signin"
+      data-type="standard"
+      data-shape="rectangular"
+      data-theme="filled_black"
+      data-text="sign_in_with"
+      data-size="large"
+      data-logo_alignment="left">
+    </div>
+  </div>
+
+  <div id="wallet" class="hidden">
+    <h2> הארנק שלי</h2>
+    <p><strong>כתובת:</strong> <span id="walletAddress"></span></p>
+    <p><strong>יתרה:</strong> <span id="walletBalance"></span> SOL</p>
+
+    <h3>שליחת SOL</h3>
+    <input id="toAddress" placeholder="כתובת יעד" />
+    <input id="amount" placeholder="סכום ב-SOL" />
+    <button onclick="sendSol()">שלח SOL</button>
+    <p id="sendStatus"></p>
+  </div>
+
+  <div id="market" class="hidden">
+    <h2> נתוני שוק</h2>
+    <canvas id="priceChart" height="200"></canvas>
+    <p id="marketStatus"><h2>📈 גרף מחיר המטבעות הפופולריים</h2>
 
 <div class="btns">
   <button onclick="fetchData('1')" id="btn1H">1H</button>
@@ -278,58 +328,7 @@
     background: #1a1a1a;
     border-radius: 8px;
   }
-</style>
-
-</body>
-</html>
-
-<div id="app" class="container">
-  <div id="register">
-    <h2> צור ארנק חדש</h2>
-    <button onclick="createWallet()">צור ארנק</button>
-    <p id="newMnemonic"></p>
-    <div id="newMnemonic" style="margin-top: 10px; color: #0ff;"></div>
-
-    <h3> התחברות עם 12 מילים</h3>
-    <input id="mnemonicInput" placeholder="twelve words..." />
-    <button onclick="importWallet()">התחבר</button>
-
-    <h3> התחברות עם Private Key</h3>
-    <input id="privKeyInput" placeholder="Private key (base58)" />
-    <button onclick="importPrivateKey()">התחבר עם מפתח</button>
-    <p id="loginStatus"></p>
-
-    <!-- התחברות עם גוגל -->
-    <div id="g_id_onload"
-      data-client_id="284055538861-7es2cdmvj19gmkjdt9kvkjtjf7locrkj.apps.googleusercontent.com"
-      data-callback="handleCredentialResponse">
-    </div>
-    <div class="g_id_signin"
-      data-type="standard"
-      data-shape="rectangular"
-      data-theme="filled_black"
-      data-text="sign_in_with"
-      data-size="large"
-      data-logo_alignment="left">
-    </div>
-  </div>
-
-  <div id="wallet" class="hidden">
-    <h2> הארנק שלי</h2>
-    <p><strong>כתובת:</strong> <span id="walletAddress"></span></p>
-    <p><strong>יתרה:</strong> <span id="walletBalance"></span> SOL</p>
-
-    <h3>שליחת SOL</h3>
-    <input id="toAddress" placeholder="כתובת יעד" />
-    <input id="amount" placeholder="סכום ב-SOL" />
-    <button onclick="sendSol()">שלח SOL</button>
-    <p id="sendStatus"></p>
-  </div>
-
-  <div id="market" class="hidden">
-    <h2> נתוני שוק</h2>
-    <canvas id="priceChart" height="200"></canvas>
-    <p id="marketStatus">טוען...</p>
+</style></p>
   </div>
 
   <div id="settings" class="hidden">
