@@ -1,15 +1,14 @@
 export default async function handler(req, res) {
-  const { question } = req.body;
-
-  if (!question) {
-    return res.status(400).json({ answer: "שאלה חסרה בבקשה." });
-  }
-
   try {
-    const apiKey = process.env.OPENAI_API_KEY;
+    const { question } = req.body;
 
+    if (!question) {
+      return res.status(400).json({ answer: "שאלה חסרה." });
+    }
+
+    const apiKey = process.env.OPENAI_API_KEY;
     if (!apiKey) {
-      return res.status(500).json({ answer: "המפתח לא הוגדר בשרת." });
+      return res.status(500).json({ answer: "המפתח לא קיים ב־ENV." });
     }
 
     const response = await fetch("https://api.openai.com/v1/chat/completions", {
@@ -28,11 +27,11 @@ export default async function handler(req, res) {
     const data = await response.json();
 
     if (!data || !data.choices || !data.choices[0]) {
-      return res.status(500).json({ answer: "תקלה בתשובת OpenAI." });
+      return res.status(500).json({ answer: "שגיאה: לא התקבלה תשובה תקינה מ־OpenAI." });
     }
 
     return res.status(200).json({ answer: data.choices[0].message.content });
   } catch (error) {
-    return res.status(500).json({ answer: "שגיאה בשרת: " + error.message });
+    return res.status(500).json({ answer: "שגיאת מערכת: " + error.message });
   }
 }
