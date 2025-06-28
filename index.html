@@ -411,14 +411,30 @@
   </div>
 
   <div id="settings" class="hidden">
-    <h2>⚙ הגדרות</h2>
-    <ul>
-      <li> החלפת סיסמה</li>
-      <li> פרופיל אישי</li>
-      <li> Face ID (בקרוב)</li>
-    </ul>
-  </div>
+   <!-- שורה 131 -->
+<div id="settingsPanel" style="padding: 20px; color: white;">
+  <h2>⚙️ הגדרות</h2>
+
+  <h3>🔐 אבטחה</h3>
+  <button onclick="showPrivateKey()">הצג מפתח פרטי</button><br><br>
+  <button onclick="exportMnemonic()">ייצא את 12 המילים</button><br><br>
+
+  <h3>🌐 רשת</h3>
+  <select id="networkSelect">
+    <option value="mainnet-beta">Mainnet</option>
+    <option value="devnet">Devnet</option>
+  </select><br><br>
+
+  <h3>🎨 תצוגה</h3>
+  <button onclick="toggleTheme()">החלף מצב כהה/בהיר</button><br><br>
+
+  <h3>📤 כללי</h3>
+  <button onclick="resetApp()">איפוס מלא לאפליקציה</button><br><br>
+
+  <p style="color: gray; font-size: 12px;">גרסה: v1.0.0</p>
 </div>
+<!-- סוף אזור ההגדרות -->
+
 
 <!-- פוטר -->
 <footer style="background:#111; color:#ccc; padding:20px; margin-top:40px; font-size:14px; text-align:center;">
