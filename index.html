@@ -684,6 +684,26 @@ async function handleAsk() {
     panel.style.display = panel.style.display === "none" ? "block" : "none";
   }
 </script>
+<script>
+  function showSection(sectionId) {
+    // הסתר את כל הסקשנים
+    const sections = document.querySelectorAll("section");
+    sections.forEach((section) => {
+      section.style.display = "none";
+    });
+
+    // הצג את הסקשן שבחרנו
+    const selected = document.getElementById(sectionId);
+    if (selected) {
+      selected.style.display = "block";
+    }
+  }
+
+  // הצג את הסקשן הראשון כברירת מחדל אם יש
+  window.onload = () => {
+    showSection("wallet"); // תוכל לשנות ל־"register" או כל סקשן אחר
+  };
+</script>
 
 </body>
 </html>
