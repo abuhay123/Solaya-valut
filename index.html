@@ -624,5 +624,78 @@ async function handleAsk() {
 </script>
 
 <script src="ai-helper.js"></script>
+<!-- עוזר AI ככפתור פופאפ -->
+<style>
+  #aiWidgetButton {
+    position: fixed;
+    left: 20px;
+    bottom: 20px;
+    background: #00ffcc;
+    color: black;
+    border: none;
+    border-radius: 50%;
+    width: 60px;
+    height: 60px;
+    font-size: 28px;
+    cursor: pointer;
+    z-index: 10000;
+    box-shadow: 0 0 15px #00ffcc;
+  }
+
+  #aiWidgetPanel {
+    position: fixed;
+    left: 20px;
+    bottom: 90px;
+    background: #111;
+    border: 2px solid #00ffcc;
+    border-radius: 10px;
+    padding: 15px;
+    width: 250px;
+    display: none;
+    z-index: 10000;
+    box-shadow: 0 0 20px #00ffcc88;
+  }
+
+  #aiWidgetPanel input {
+    width: 100%;
+    padding: 8px;
+    border-radius: 6px;
+    margin-bottom: 8px;
+    border: none;
+  }
+
+  #aiWidgetPanel button {
+    background-color: #00ffcc;
+    color: #000;
+    font-weight: bold;
+    width: 100%;
+    padding: 8px;
+    border-radius: 6px;
+    cursor: pointer;
+    border: none;
+  }
+
+  #aiWidgetPanel p {
+    color: #0ff;
+    margin-top: 10px;
+    font-size: 14px;
+  }
+</style>
+
+<button id="aiWidgetButton" onclick="toggleAIWidget()">🤖</button>
+
+<div id="aiWidgetPanel">
+  <input id="aiInput" placeholder="מה תרצה לדעת?" />
+  <button onclick="handleAsk()">שאל את Solaya AI</button>
+  <p id="aiResult"></p>
+</div>
+
+<script>
+  function toggleAIWidget() {
+    const panel = document.getElementById("aiWidgetPanel");
+    panel.style.display = panel.style.display === "none" ? "block" : "none";
+  }
+</script>
+
 </body>
 </html>
