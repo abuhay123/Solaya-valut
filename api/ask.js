@@ -3,16 +3,21 @@ export default async function handler(req, res) {
     return res.status(405).json({ error: "Method not allowed" });
   }
 
-  const { question } = req.body || {};
+  let body = '';
+  try {
+    body = req.body;
+  } catch (e) {
+    return res.status(400).json({ error: "Invalid body" });
+  }
 
+  const question = body?.question;
   if (!question) {
     return res.status(400).json({ error: "Missing question" });
   }
 
   const apiKey = process.env.OPENAI_API_KEY;
-
   if (!apiKey) {
-    return res.status(500).json({ error: "Missing OpenAI API key" });
+    return res.status(500).json({ error: "Missing API key" });
   }
 
   try {
@@ -29,12 +34,7 @@ export default async function handler(req, res) {
     });
 
     const data = await response.json();
-
-    if (data.error) {
-      return res.status(500).json({ error: data.error.message });
-    }
-
-    return res.status(200).json({ answer: data.choices[0].message.content });
+    return res.status(200).json({ answer: data.choices?.[0]?.message?.content || "אין תשובה." });
 
   } catch (error) {
     return res.status(500).json({ error: error.message });
