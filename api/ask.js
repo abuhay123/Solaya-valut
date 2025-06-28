@@ -6,7 +6,7 @@ export default async function handler(req, res) {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-       "Authorization": `Bearer ${process.env.OPENAI_API_KEY}`
+        "Authorization": `Bearer ${process.env.OPENAI_API_KEY}`
       },
       body: JSON.stringify({
         model: "gpt-3.5-turbo",
@@ -15,14 +15,14 @@ export default async function handler(req, res) {
       })
     });
 
-    if (!response.ok) {
-      const errorText = await response.text();
-      return res.status(500).json({ answer: `שגיאת OpenAI: ${errorText}` });
+    const data = await response.json();
+
+    if (!data || !data.choices || !data.choices[0]) {
+      return res.status(500).json({ answer: "שגיאה: לא התקבלה תשובה תקינה מה־API." });
     }
 
-    const data = await response.json();
-    return res.status(200).json({ answer: data.choices?.[0]?.message?.content });
+    return res.status(200).json({ answer: data.choices[0].message.content });
   } catch (error) {
-    return res.status(500).json({ answer: `שגיאת מערכת: ${error.message}` });
+    return res.status(500).json({ answer: "שגיאת שרת: " + error.message });
   }
 }
