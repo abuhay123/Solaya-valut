@@ -1,6 +1,7 @@
 export default async function handler(req, res) {
   try {
-    const { question } = req.body;
+    const body = await getBody(req); // נפרק את ה-body בצורה בטוחה
+    const question = body?.question;
 
     if (!question) {
       return res.status(400).json({ answer: "שאלה חסרה." });
@@ -8,7 +9,7 @@ export default async function handler(req, res) {
 
     const apiKey = process.env.OPENAI_API_KEY;
     if (!apiKey) {
-      return res.status(500).json({ answer: "המפתח לא קיים ב־ENV." });
+      return res.status(500).json({ answer: "חסר מפתח API." });
     }
 
     const response = await fetch("https://api.openai.com/v1/chat/completions", {
@@ -25,9 +26,27 @@ export default async function handler(req, res) {
     });
 
     const data = await response.json();
+    const answer = data?.choices?.[0]?.message?.content || "אין תשובה.";
 
-    return res.status(200).json({ answer: data.choices[0].message.content });
+    return res.status(200).json({ answer });
   } catch (error) {
     return res.status(500).json({ answer: "שגיאת מערכת: " + error.message });
   }
+}
+
+// עוזר לפרק את body (פתרון לשגיאת undefined)
+function getBody(req) {
+  return new Promise((resolve, reject) => {
+    let data = '';
+    req.on('data', chunk => {
+      data += chunk;
+    });
+    req.on('end', () => {
+      try {
+        resolve(JSON.parse(data));
+      } catch (e) {
+        reject(e);
+      }
+    });
+  });
 }
