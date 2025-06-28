@@ -26,10 +26,6 @@ export default async function handler(req, res) {
 
     const data = await response.json();
 
-    if (!data || !data.choices || !data.choices[0]) {
-      return res.status(500).json({ answer: "שגיאה: לא התקבלה תשובה תקינה מ־OpenAI." });
-    }
-
     return res.status(200).json({ answer: data.choices[0].message.content });
   } catch (error) {
     return res.status(500).json({ answer: "שגיאת מערכת: " + error.message });
