@@ -3,40 +3,34 @@ export default async function handler(req, res) {
     return res.status(405).json({ error: "Method not allowed" });
   }
 
-  let body = "";
+  const { question } = req.body || {};
 
-  try {
-    body = req.body;
-    if (!body || !body.question) {
-      return res.status(400).json({ error: "Missing question in body" });
-    }
-  } catch (error) {
-    return res.status(400).json({ error: "Invalid body" });
+  if (!question) {
+    return res.status(400).json({ error: "Missing question" });
   }
 
-  const apiKey = process.env.OPENAI_API_KEY;
-
   try {
-    const openaiRes = await fetch("https://api.openai.com/v1/chat/completions", {
+    const response = await fetch("https://api.openai.com/v1/chat/completions", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        "Authorization": `Bearer ${apiKey}`,
+        "Authorization": `Bearer ${process.env.OPENAI_API_KEY}`
       },
       body: JSON.stringify({
         model: "gpt-3.5-turbo",
-        messages: [{ role: "user", content: body.question }]
+        messages: [{ role: "user", content: question }]
       })
     });
 
-    const data = await openaiRes.json();
+    const data = await response.json();
 
     if (data.error) {
-      return res.status(500).json({ error: data.error.message });
+      return res.status(500).json({ answer: "שגיאת OpenAI: " + data.error.message });
     }
 
     return res.status(200).json({ answer: data.choices[0].message.content });
-  } catch (err) {
-    return res.status(500).json({ error: "Server error: " + err.message });
+
+  } catch (error) {
+    return res.status(500).json({ answer: "שגיאת מערכת: " + error.message });
   }
 }
