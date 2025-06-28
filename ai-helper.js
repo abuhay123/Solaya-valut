@@ -4,7 +4,7 @@ async function askAI(question) {
     headers: {
       "Content-Type": "application/json"
     },
-    body: JSON.stringify({ question }) // שולח את השאלה כמו שצריך
+    body: JSON.stringify({ question })
   });
 
   const data = await response.json();
