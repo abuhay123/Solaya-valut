@@ -1,22 +1,24 @@
+// pages/api/ask.js
+
 export default async function handler(req, res) {
   try {
-    const body = await getBody(req); // נפרק את ה-body בצורה בטוחה
+    const body = await getRawBody(req);
     const question = body?.question;
 
     if (!question) {
-      return res.status(400).json({ answer: "שאלה חסרה." });
+      return res.status(400).json({ answer: "❌ שאלה חסרה." });
     }
 
     const apiKey = process.env.OPENAI_API_KEY;
     if (!apiKey) {
-      return res.status(500).json({ answer: "חסר מפתח API." });
+      return res.status(500).json({ answer: "❌ חסר מפתח API." });
     }
 
-    const response = await fetch("https://api.openai.com/v1/chat/completions", {
+    const openaiRes = await fetch("https://api.openai.com/v1/chat/completions", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        "Authorization": `Bearer ${apiKey}`
+        Authorization: `Bearer ${apiKey}`
       },
       body: JSON.stringify({
         model: "gpt-3.5-turbo",
@@ -25,22 +27,20 @@ export default async function handler(req, res) {
       })
     });
 
-    const data = await response.json();
+    const data = await openaiRes.json();
     const answer = data?.choices?.[0]?.message?.content || "אין תשובה.";
 
     return res.status(200).json({ answer });
-  } catch (error) {
-    return res.status(500).json({ answer: "שגיאת מערכת: " + error.message });
+
+  } catch (err) {
+    return res.status(500).json({ answer: "שגיאת מערכת: " + err.message });
   }
 }
 
-// עוזר לפרק את body (פתרון לשגיאת undefined)
-function getBody(req) {
+function getRawBody(req) {
   return new Promise((resolve, reject) => {
     let data = '';
-    req.on('data', chunk => {
-      data += chunk;
-    });
+    req.on('data', chunk => (data += chunk));
     req.on('end', () => {
       try {
         resolve(JSON.parse(data));
