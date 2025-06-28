@@ -597,6 +597,32 @@ async function loadTrendingCoins() {
   }
 }
 </script>
+<script>
+// הפונקציה המתוקנת לשאלת AI דרך השרת שלך
+async function handleAsk() {
+  const input = document.getElementById("aiInput").value.trim();
+  if (!input) return;
+
+  document.getElementById("aiResult").innerText = "חושב...";
+
+  try {
+    const response = await fetch("/api/ask", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({ question: input })
+    });
+
+    const data = await response.json();
+    const result = data.answer || "לא התקבלה תשובה";
+    document.getElementById("aiResult").innerText = result;
+  } catch (err) {
+    document.getElementById("aiResult").innerText = "שגיאה: " + err.message;
+  }
+}
+</script>
+
 <script src="ai-helper.js"></script>
 </body>
 </html>
